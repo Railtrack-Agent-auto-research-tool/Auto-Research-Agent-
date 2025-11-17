@@ -18,22 +18,18 @@ async def search_and_download_papers(query:str,directory:str) -> str:
     vfs["directory"] = []
     titles = []
     for paper in results.results():
-        print("Downloading:", paper.title)
-        titles.append(paper.title)
+        print("Downloading:", paper.title,)
+        abstract = paper.summary
+        print(abstract)
+        titles.append(paper.title+"-"+abstract)
         path = paper.download_pdf(dirpath=directory)
         vfs["directory"].append(path)
     rt.context.put("vfs",vfs)
-    return f"Hello, {directory}!"
-
-
-
+    return f"Downloaded {len(titles)} papers. The papers are : titles"
 
 @rt.session(context={"vfs": {}})
 async def main():
     response = await rt.call(search_and_download_papers,"transformers","test")
-    print(rt.context.get("vfs"))
-    print(response)
-    return response
 
 
 if __name__ == "__main__":
