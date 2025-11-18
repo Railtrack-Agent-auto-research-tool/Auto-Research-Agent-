@@ -27,6 +27,10 @@ async def search_and_download_papers(query:str,directory:str) -> str:
     rt.context.put("vfs",vfs)
     return f"Downloaded {len(titles)} papers. The papers are : titles"
 
+@rt.function_node
+async def get_arxiv_query(query:str):
+    return
+
 @rt.session(context={"vfs": {}})
 async def main():
     response = await rt.call(search_and_download_papers,"transformers","test")
