@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from dotenv import load_dotenv
@@ -15,3 +16,12 @@ def build_arxiv_agent():
         system_message=SYSTEM_PROMPT_FOR_ARXIV_AGENT,
         tool_nodes=[get_arxiv_query],
     )
+    return agent
+
+async def main():
+    agent = build_arxiv_agent()
+    response = await rt.call(agent,"Help me find all the papers that are important in transformers")
+    print(response.message_history)
+
+if __name__ == "__main__":
+    asyncio.run(main())
