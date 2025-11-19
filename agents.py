@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import railtracks as rt
 from pydantic import BaseModel, Field
 
-from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION,ARXIV_QUERY_PARAM_DESCRIPTION
+from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION,ARXIV_QUERY_PARAM_DESCRIPTION,SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
 from tools.arxiv_tools import search_and_download_papers,get_arxiv_query
 from tools.todo_tools import write_todo, read_todo
 
@@ -52,6 +52,16 @@ def build_research_coordinator(model):
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
         tool_nodes=[write_todo,read_todo]
     )
+
+
+def create_writing_agent(model,summaries):
+    agent = rt.agent_node(
+            name="writing Agent",
+            llm=model,
+            system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
+            #tool_nodes=[get_arxiv_query]
+            
+        )
 
 
 async def main():
