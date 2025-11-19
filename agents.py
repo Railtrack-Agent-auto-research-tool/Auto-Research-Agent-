@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import railtracks as rt
 from pydantic import BaseModel, Field
 
-from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR
+from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION
 from tools.arxiv_tools import search_and_download_papers,get_arxiv_query
 from tools.todo_tools import write_todo, read_todo
 
@@ -18,8 +18,11 @@ class ArxivQuery(BaseModel):
 def build_arxiv_agent(model,with_schema=False):
     agent = None
     manifest = rt.ToolManifest(
-        description="A calculator agent that can perform mathematical calculations and solve math problems.",
-        parameters=
+        description=ARXIV_AGENT_DESCRIPTION,
+        parameters=[rt.llm.Parameter(
+            name="prompt",
+            description="The arXiv search query (e.g., 'transformer models').",
+        )]
     )
     if with_schema:
         agent = rt.agent_node(

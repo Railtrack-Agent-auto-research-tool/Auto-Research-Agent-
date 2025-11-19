@@ -28,5 +28,25 @@ You are a research coordinator you are responsible for coordinating research by 
 """
 
 ARXIV_AGENT_DESCRIPTION = """
-The ARXIV Agent has the ability to generate arxiv compatible queries. It can take a prompt and convert it to a arxiv query
+The ARXIV Agent is responsible for generating valid, arXiv-compatible search queries. 
+It takes a natural-language prompt and converts it into a precise arXiv query string 
+that can be used to retrieve relevant papers.
+
+Example prompts:
+    - "Find recent papers on diffusion models for image generation."
+    - "Query arXiv for transformer-based NLP architectures."
+    - "Search for papers on reinforcement learning applied to healthcare."
+    - "Get me arXiv results on efficient fine-tuning methods for LLMs."
+"""
+
+ARXIV_QUERY_PARAM_DESCRIPTION = """
+A natural-language prompt describing the kind of research papers the user wants. 
+The agent will convert this prompt into a valid arXiv search query. 
+This can include topics, methods, authors, fields (e.g., cs.LG, stat.ML), or constraints such as recency.
+
+Examples:
+    - "transformers for time-series forecasting"
+    - "GANs for medical image synthesis"
+    - "papers by Yann LeCun on energy-based models"
+    - "recent work in cs.CL on multilingual LLMs"
 """
