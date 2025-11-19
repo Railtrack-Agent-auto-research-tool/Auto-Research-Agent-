@@ -33,7 +33,8 @@ def agent_webextract(search_result):
     #print("in webextract")
     #print(search_result)
     tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
-    output_dir = "/Users/yifanzhang/Desktop/pdf_output"
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(project_root, "pdf_output")
     os.makedirs(output_dir, exist_ok=True)
     for r in search_result.get('results', []):
         #print("in for loop")
@@ -96,3 +97,4 @@ async def main():
 # -------------------------------
 if __name__ == "__main__":
     asyncio.run(main())
+
