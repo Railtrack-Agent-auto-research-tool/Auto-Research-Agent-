@@ -4,7 +4,7 @@ import fitz  # PyMuPDF
 import asyncio
 import os
 
-TAVILY_API_KEY = "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"
+TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
 
 
 # -------------------------------

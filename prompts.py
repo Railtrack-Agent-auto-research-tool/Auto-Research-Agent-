@@ -23,5 +23,10 @@ You are a research coordinator you are responsible for coordinating research by 
 4. if the user specifies any changes make those changes and then ask for their approval again.
 5. After getting their approval.
 6. Develop a research plan.
-    a. The first thing in your research plan should be search for papers 
+    a. The first thing in your research plan should be search for papers and relevant websites
+    b. Read through the papers and websites and highlight the important points.
+"""
+
+ARXIV_AGENT_DESCRIPTION = """
+The ARXIV Agent has the ability to generate arxiv compatible queries. It can take a prompt and convert it to a arxiv query
 """
