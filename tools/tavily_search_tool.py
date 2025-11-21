@@ -7,9 +7,6 @@ import os
 TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
 
 
-# -------------------------------
-# Function: Web Search
-# -------------------------------
 @rt.function_node
 def agent_websearch(query_sentence, max_result):
     tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
@@ -18,11 +15,8 @@ def agent_websearch(query_sentence, max_result):
         query=query_sentence,
         max_results=max_result
     )
-    #print(response)
     agent_webextract(response)
 
-    #print(response)
-    #return response
 
 
 # -------------------------------

@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION,ARXIV_QUERY_PARAM_DESCRIPTION,SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
 from tools.arxiv_tools import search_and_download_papers,get_arxiv_query
 from tools.todo_tools import write_todo, read_todo
+from tools.research_tools import get_research_brief,generate_research_brief
 
 load_dotenv()
 
@@ -50,8 +51,9 @@ def build_research_coordinator(model):
         name = "Research Coordinator",
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
-        tool_nodes=[write_todo,read_todo]
+        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers]
     )
+    return agent
 
 
 def create_writing_agent(model,summaries):
@@ -76,8 +78,21 @@ async def main():
     else:
         print(response.text)
 
+@rt.session(context={"vfs": {}})
 async def main1():
-    agent = build_deep_research_agent()
+    model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
+    agent = build_research_coordinator(model)
+    message_history = []
+    while True:
+        user_input = input("Enter a query: ")
+        if user_input.strip() == "quit":
+            break
+        message_history.append(rt.llm.UserMessage(user_input))
+        response = await rt.call(agent,message_history)
+        message_history = response.message_history
+        print("Current Message ")
+        print(response.message_history)
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main1())
