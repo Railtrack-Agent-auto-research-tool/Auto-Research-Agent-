@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION,ARXIV_QUERY_PARAM_DESCRIPTION,SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
 from tools.arxiv_tools import search_and_download_papers,get_arxiv_query
+from tools.tavily_search_tool import agent_websearch, generate_websearch_query
 from tools.todo_tools import write_todo, read_todo
 from tools.research_tools import get_research_brief,generate_research_brief
 from tools.util_tools import think_tool
@@ -52,8 +53,7 @@ def build_research_coordinator(model):
         name = "Research Coordinator",
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
-        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers,get_research_brief,generate_research_brief]
-    )
+        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers,get_research_brief,generate_research_brief,agent_websearch,generate_websearch_query])
     return agent
 
 
@@ -80,8 +80,7 @@ async def main():
         print(response.text)
 
 @rt.session(context={"vfs": {"directories":{
-
-}})
+}}})
 async def main1():
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
     agent = build_research_coordinator(model)
