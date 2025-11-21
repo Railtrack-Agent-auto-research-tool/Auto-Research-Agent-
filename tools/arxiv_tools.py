@@ -7,7 +7,7 @@ import railtracks as rt
 
 
 @rt.function_node
-async def search_and_download_papers(query:str,directory:str) -> str:
+async def search_and_download_papers(query: str, directory: str) -> str:
     """
     Search arXiv for papers matching a query and download their PDFs.
 
@@ -19,7 +19,7 @@ async def search_and_download_papers(query:str,directory:str) -> str:
     Args:
         query (str): The arXiv search query (e.g., "transformer models").
         directory (str): Path to the directory where the PDFs will be saved.
-                         The directory is created if it does not exist.
+                         The directory is created if it does not exist. Start directory name with "./"
 
     Returns:
         str: A message indicating how many papers were downloaded.
@@ -33,24 +33,58 @@ async def search_and_download_papers(query:str,directory:str) -> str:
         - Up to 20 results are fetched, sorted by arXiv relevance.
         - Each entry added to the VFS corresponds to the local PDF file path.
     """
-    os.makedirs(directory,exist_ok=True)
+    # Ensure directory exists
+    os.makedirs(directory, exist_ok=True)
+
+    # Search arXiv
     results = arxiv.Search(
         query=query,
         max_results=20,
         sort_by=arxiv.SortCriterion.Relevance
     )
-    vfs = rt.context.get("vfs",{})
-    vfs["directory"] = []
+
+    # Load or init VFS
+    vfs = rt.context.get("vfs", {})
+    directories = vfs.setdefault("directories", {})
+
+    # Ensure this directory key exists
+    directories.setdefault(directory, [])
+
     titles = []
+    downloaded_paths = directories[directory]
+
+    # Download papers
     for paper in results.results():
-        print("Downloading:", paper.title,)
+        print("Downloading:", paper.title)
         abstract = paper.summary
-        print(abstract)
-        titles.append(paper.title+"-"+abstract)
-        path = paper.download_pdf(dirpath=directory)
-        vfs["directory"].append(path)
-    rt.context.put("vfs",vfs)
-    return f"Downloaded {len(titles)} papers. The papers are : titles"
+        titles.append(paper.title + "-" + abstract)
+
+        # Safe filename
+        cleaned_title = (
+            paper.title.replace("/", "_")
+                       .replace("\\", "_")
+                       .replace(":", "_")
+                       .replace("*", "_")
+                       .replace("?", "_")
+                       .replace('"', "_")
+                       .replace("<", "_")
+                       .replace(">", "_")
+                       .replace("|", "_")
+        ) + ".pdf"
+
+        try:
+            path = paper.download_pdf(dirpath=directory, filename=cleaned_title)
+            downloaded_paths.append(path)
+        except Exception as e:
+            print(f"Failed to download {paper.title}: {e}")
+            continue
+
+    # Save updated VFS
+    rt.context.put("vfs", vfs)
+
+    # 🔥 Return statement untouched
+    return f"Downloaded {len(titles)} papers. The papers are : {titles}."
+
 
 @rt.function_node
 async def get_arxiv_query(query:str):

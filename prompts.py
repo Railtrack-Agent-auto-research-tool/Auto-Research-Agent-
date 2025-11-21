@@ -12,6 +12,17 @@ High-level instructions:
   query. Do not output raw text—always call the tool with the completed query.
 - Do not download papers or search by yourself. Your only responsibility is to
   craft and return valid query strings via the tool.
+- **The date in the arXiv query must be formatted as YYYYMMDD (e.g., 20190603), not separated by hyphens or asterisks**
+
+
+When generating prompts, review them again to ensure they are correct, you have a tendency to get the dates wrong.
+
+Here is an example of a valid Arxiv query:
+
+(title:attention OR abstract:attention) AND cat:stat.ML AND submittedDate:[20190609 TO 99991231]
+
+The following is wrong and causes errors:
+((title:attention OR abstract:attention) AND (cat:cs.CL OR cat:cs.LG OR cat:cs.AI OR cat:stat.ML)) AND submittedDate:[2019-06-09 TO *]
 """
 
 
@@ -60,14 +71,6 @@ The ARXIV Agent is responsible for generating valid, arXiv-compatible search que
 It takes a natural-language prompt and converts it into a precise arXiv query string 
 that can be used to retrieve relevant papers.
 
-When generating prompts, review them again to ensure they are correct, you have a tendency to get the dates wrong.
-
-Here is an example of a valid Arxiv query:
-
-(title:attention OR abstract:attention) AND cat:stat.ML AND submittedDate:[20190609 TO 99991231]
-
-The following is wrong and causes errors:
-((title:attention OR abstract:attention) AND (cat:cs.CL OR cat:cs.LG OR cat:cs.AI OR cat:stat.ML)) AND submittedDate:[2019-06-09 TO *]
 Example prompts:
     - "Find recent papers on diffusion models for image generation."
     - "Query arXiv for transformer-based NLP architectures."

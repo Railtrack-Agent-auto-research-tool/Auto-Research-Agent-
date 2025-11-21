@@ -7,88 +7,78 @@ import os
 TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
 
 
-@rt.function_node
-def agent_websearch(query_sentence, max_result):
+def agent_webextract(search_result, directory):
     tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
-    response = tavily_client.search(
-        query=query_sentence,
-        max_results=max_result
-    )
-    agent_webextract(response)
-
-
-
-# -------------------------------
-# Function: Web Extract and Save PDF
-# -------------------------------
-@rt.function_node
-def agent_webextract(search_result):
-    #print("in webextract")
-    #print(search_result)
-    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
     project_root = os.path.dirname(os.path.abspath(__file__))
     output_dir = os.path.join(project_root, "pdf_output")
     os.makedirs(output_dir, exist_ok=True)
+
+    saved_paths = []
+
     for r in search_result.get('results', []):
-        #print("in for loop")
-        #print(r)
-        if r.get('score', 0) >= 0.8:
-            #print("erererererererererererereerererererere")
-            #print(r)
-            page_result = tavily_client.extract(urls=r['url'])#urls=r['url']
-            #print(page_result)
-            first_result = page_result["results"][0]
-            raw_text = first_result["raw_content"]
-            #print(raw_text)
-  
-            if not raw_text:
-                continue
+        if r.get('score', 0) < 0.8:
+            continue
 
-            print(raw_text[:500])
+        page_result = tavily_client.extract(urls=r['url'])
+        first_result = page_result["results"][0]
+        raw_text = first_result.get("raw_content")
 
-            pdf = fitz.open()
-            page = pdf.new_page()
-            y_pos = 50
-            page.insert_text((50, y_pos), f"URL: {r['url']}", fontsize=12, color=(0, 0, 1))
-            y_pos += 30
+        if not raw_text:
+            continue
 
-            lines = raw_text.split("\n")
-            for line in lines:
-                page.insert_text((50, y_pos), line, fontsize=11)
-                y_pos += 15
-                if y_pos > 750:
-                    page = pdf.new_page()
-                    y_pos = 50
+        pdf = fitz.open()
+        page = pdf.new_page()
+        y_pos = 50
 
-            filename = r["url"].replace("https://", "").replace("/", "_") + ".pdf"
-            full_path = os.path.join(output_dir, filename)
-            pdf.save(full_path)
-            pdf.close()
-            print(f"Saved PDF: {filename}")
+        page.insert_text((50, y_pos), f"URL: {r['url']}", fontsize=12, color=(0, 0, 1))
+        y_pos += 30
 
+        for line in raw_text.split("\n"):
+            page.insert_text((50, y_pos), line, fontsize=11)
+            y_pos += 15
+            if y_pos > 750:
+                page = pdf.new_page()
+                y_pos = 50
 
-# -------------------------------
-# Main function
-# -------------------------------
-async def main():
-    # Create MCP server
-    #mcp = rt.create_mcp_server([agent_websearch, agent_webextract], server_name="My MCP Server")
+        filename = (
+            r["url"]
+            .replace("https://", "")
+            .replace("http://", "")
+            .replace("/", "_")
+        ) + ".pdf"
 
-    # Run MCP server
-    #mcp.run(transport="streamable-http")
+        full_path = os.path.join(output_dir, filename)
+        pdf.save(full_path)
+        pdf.close()
 
-    
-    response = await rt.call(agent_websearch, "how many fingers do monkeys have?",
-       10)
+        saved_paths.append(full_path)
 
-    print(response)
+    return saved_paths
 
 
+@rt.function_node
+def agent_websearch(query_sentence: str, directory: str) -> str:
+    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
-# -------------------------------
-# Entry point
-# -------------------------------
-if __name__ == "__main__":
-    asyncio.run(main())
+    # 🌐 search
+    response = tavily_client.search(
+        query=query_sentence,
+        max_results=20
+    )
+
+    # 📄 extract pages + get saved file paths
+    saved_paths = agent_webextract(response, directory)
+
+    # 📦 update VFS inside the function
+    vfs = rt.context.get("vfs", {})
+    directories = vfs.setdefault("directories", {})
+
+    # Store inside a stable key
+    directories.setdefault(directory, [])
+    directories[directory].extend(saved_paths)
+
+    rt.context.put("vfs", vfs)
+
+    return f"Downloaded {len(saved_paths)} extracted pages from Tavily results."
 

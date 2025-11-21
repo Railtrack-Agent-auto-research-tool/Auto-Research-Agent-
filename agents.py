@@ -9,6 +9,7 @@ from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_CO
 from tools.arxiv_tools import search_and_download_papers,get_arxiv_query
 from tools.todo_tools import write_todo, read_todo
 from tools.research_tools import get_research_brief,generate_research_brief
+from tools.util_tools import think_tool
 
 load_dotenv()
 
@@ -31,7 +32,7 @@ def build_arxiv_agent(model,with_schema=False):
             name="ARXIV Agent",
             llm=model,
             system_message=SYSTEM_PROMPT_FOR_ARXIV_AGENT,
-            tool_nodes=[get_arxiv_query],
+            tool_nodes=[get_arxiv_query,think_tool],
             output_schema=ArxivQuery,
             manifest=manifest,
         )
@@ -40,7 +41,7 @@ def build_arxiv_agent(model,with_schema=False):
             name="ARXIV Agent",
             llm=model,
             system_message=SYSTEM_PROMPT_FOR_ARXIV_AGENT,
-            tool_nodes=[get_arxiv_query],
+            tool_nodes=[get_arxiv_query,think_tool],
             manifest=manifest,
         )
     return agent
@@ -51,7 +52,7 @@ def build_research_coordinator(model):
         name = "Research Coordinator",
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
-        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers]
+        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers,get_research_brief,generate_research_brief]
     )
     return agent
 
@@ -78,7 +79,9 @@ async def main():
     else:
         print(response.text)
 
-@rt.session(context={"vfs": {}})
+@rt.session(context={"vfs": {"directories":{
+
+}})
 async def main1():
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
     agent = build_research_coordinator(model)

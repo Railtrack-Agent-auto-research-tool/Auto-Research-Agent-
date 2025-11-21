@@ -25,3 +25,5 @@ def get_research_brief() -> str:
         has been generated, returns a default message indicating its absence.
     """
     return rt.context.get("research_brief", "No research brief generated.")
+
+# def read_and_write_notes_for_papers() -> str:
