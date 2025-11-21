@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Any
+from typing import Any, Dict, List
 
 import arxiv
 import railtracks as rt
@@ -84,6 +84,43 @@ async def search_and_download_papers(query: str, directory: str) -> str:
 
     # 🔥 Return statement untouched
     return f"Downloaded {len(titles)} papers. The papers are : {titles}."
+
+
+@rt.function_node
+def execute_search(query: str) -> List[Dict[str, Any]]:
+    """
+    Search arXiv for papers matching a query and return a list of metadata dictionaries.
+
+    This function performs an arXiv search using the provided query string and retrieves
+    up to 5 of the most relevant results. For each result, it extracts the title and abstract
+    and returns them as a dictionary.
+
+    Args:
+        query (str): The arXiv search query string (e.g., "transformer models").
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries, each containing:
+            - "title" (str): The paper's title.
+            - "abstract" (str): The paper's abstract.
+
+    Notes:
+        - Results are sorted by arXiv relevance.
+        - Only the first 5 results are returned.
+    """
+    results = arxiv.Search(
+        query=query,
+        max_results=5,
+        sort_by=arxiv.SortCriterion.Relevance
+    )
+    test_results = []
+    for result in results.results():
+        entry_dict = {
+            "title": result.title,
+            "abstract": result.summary,
+        }
+        test_results.append(entry_dict)
+    return test_results
+
 
 
 @rt.function_node

@@ -5,25 +5,30 @@ High-level instructions:
 - Your job is to translate the user’s intent into a syntactically correct arXiv
   search query.
 - Always generate queries that can be passed directly into the arXiv API.
-- Follow arXiv’s official query syntax (e.g., title:, author:, abstract:,
-  AND/OR, parentheses).
+- Follow arXiv’s official query syntax (e.g., title:, author:, abstract:, AND/OR, parentheses).
 - Keep queries focused and avoid unnecessary terms.
-- You must use the provided tool function `get_arxiv_query` to return the final
-  query. Do not output raw text—always call the tool with the completed query.
-- Do not download papers or search by yourself. Your only responsibility is to
-  craft and return valid query strings via the tool.
-- **The date in the arXiv query must be formatted as YYYYMMDD (e.g., 20190603), not separated by hyphens or asterisks**
+- You must use the provided tool function `get_arxiv_query` to return the final query. Do not output raw text—always call the tool with the completed query.
+- Do not download papers or search by yourself. Your only responsibility is to craft and return valid query strings via the tool.
+- **The date in the arXiv query must be formatted as YYYYMMDD (e.g., 20190603), not separated by hyphens or asterisks.**
+- Use the **execute_search** tool to test the query and iteratively adjust it to ensure it reflects the user’s intent.
+- If your test queries consistently return few or no relevant results, do **not** force queries. Instead, note that arXiv may not have suitable sources for this topic. The agent should not rely on arXiv alone to write the report and should consider other sources.
 
+Guidelines for query generation:
+- Use concise and specific terms. Focus on titles, abstracts, categories, and submission dates.
+- Ensure boolean logic (AND/OR) is correct and parentheses are balanced.
+- Avoid overly broad categories that produce irrelevant results.
+- Review the query before returning it; double-check date formats and category syntax.
+- If there is uncertainty, test the query using `execute_search` and refine it before returning.
 
-When generating prompts, review them again to ensure they are correct, you have a tendency to get the dates wrong.
-
-Here is an example of a valid Arxiv query:
-
+Example of a valid Arxiv query:
 (title:attention OR abstract:attention) AND cat:stat.ML AND submittedDate:[20190609 TO 99991231]
 
-The following is wrong and causes errors:
+Incorrect example that causes errors:
 ((title:attention OR abstract:attention) AND (cat:cs.CL OR cat:cs.LG OR cat:cs.AI OR cat:stat.ML)) AND submittedDate:[2019-06-09 TO *]
+
+Remember: Only return queries using the `get_arxiv_query` tool. If arXiv is not a reliable source for the topic, explicitly indicate this in your reasoning and suggest alternative research approaches.
 """
+
 
 
 SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR = """

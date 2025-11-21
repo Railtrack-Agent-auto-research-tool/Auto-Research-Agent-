@@ -6,7 +6,7 @@ import railtracks as rt
 from pydantic import BaseModel, Field
 
 from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION,ARXIV_QUERY_PARAM_DESCRIPTION,SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
-from tools.arxiv_tools import search_and_download_papers,get_arxiv_query
+from tools.arxiv_tools import search_and_download_papers, get_arxiv_query, execute_search
 from tools.tavily_search_tool import agent_websearch, generate_websearch_query
 from tools.todo_tools import write_todo, read_todo
 from tools.research_tools import get_research_brief,generate_research_brief
@@ -33,7 +33,7 @@ def build_arxiv_agent(model,with_schema=False):
             name="ARXIV Agent",
             llm=model,
             system_message=SYSTEM_PROMPT_FOR_ARXIV_AGENT,
-            tool_nodes=[get_arxiv_query,think_tool],
+            tool_nodes=[get_arxiv_query,think_tool,execute_search],
             output_schema=ArxivQuery,
             manifest=manifest,
         )
@@ -42,7 +42,7 @@ def build_arxiv_agent(model,with_schema=False):
             name="ARXIV Agent",
             llm=model,
             system_message=SYSTEM_PROMPT_FOR_ARXIV_AGENT,
-            tool_nodes=[get_arxiv_query,think_tool],
+            tool_nodes=[get_arxiv_query,think_tool,execute_search],
             manifest=manifest,
         )
     return agent
