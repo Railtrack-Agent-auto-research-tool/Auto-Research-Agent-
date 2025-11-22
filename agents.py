@@ -8,9 +8,9 @@ from pydantic import BaseModel, Field
 from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION, \
     ARXIV_QUERY_PARAM_DESCRIPTION, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT, \
     SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT, WEB_SEARCH_AGENT_DESCRIPTION, WEB_SEARCH_AGENT_QUERY_DESCRIPTION
-from tools.arxiv_tools import search_and_download_papers, get_arxiv_query, execute_search, execute_search_main
+from tools.arxiv_tools import get_arxiv_query, execute_search, download_papers
 from tools.research_tools import get_research_brief, generate_research_brief
-from tools.tavily_search_tool import generate_websearch_query, execute_web_search
+from tools.tavily_search_tool import generate_websearch_query, execute_web_search, download_articles
 from tools.todo_tools import write_todo, read_todo
 from tools.util_tools import think_tool
 
@@ -78,7 +78,7 @@ def build_research_coordinator(model):
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
         tool_nodes=[write_todo, read_todo, arxiv_agent, get_research_brief,
-                    generate_research_brief, websearch_agent])
+                    generate_research_brief, websearch_agent,download_papers, download_articles])
     return agent
 
 

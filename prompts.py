@@ -61,12 +61,13 @@ Follow the steps below carefully:
         ii. Before searching, clearly explain the generated arXiv query to the user 
             and ask for confirmation to proceed.
         iii. Only after receiving user approval should you perform the literature search.
-        iv. Use the `execute_search_main` tool to fetch the results and then, by looking at the abstract or summary, select the papers that look promising
+        iv. Use the `execute_search_main` tool to fetch the results and then, by looking at the abstract or summary, select the papers that look promising.
+        v. Then use the `download_papers` tool to download relevant papers by entering their paper ids in the tool
 
       - For web resources:
         i. Generate a web search query using the `Web Search Agent`.
         ii. Present the generated query to the user and ask for confirmation before performing the search.
-        iii. Then use the 
+        iii. Then use the `download_articles` tool  to download the articles that are relevant by giving the tools a list of urls.
 
    b. Reviewing each paper or resource and highlighting key findings, important points, 
       and anything directly relevant to the user’s research goals.
