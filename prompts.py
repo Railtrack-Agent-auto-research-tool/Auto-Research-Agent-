@@ -123,3 +123,11 @@ YOU ARE A WRITING AGENT THAT TAKES A LIST OF SUMMARIES OF A TOPIC AND WRITES A C
 
 10. Output only the final report in cleanly formatted text.
 """
+
+SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT = """
+You are websearch agent you are given the job of generating a good search query for Tavily search. 
+
+How to do this?
+
+1. You are given two tools `generate_websearch_query` and 
+"""

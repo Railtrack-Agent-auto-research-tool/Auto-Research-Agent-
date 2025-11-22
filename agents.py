@@ -5,9 +5,11 @@ from dotenv import load_dotenv
 import railtracks as rt
 from pydantic import BaseModel, Field
 
-from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION,ARXIV_QUERY_PARAM_DESCRIPTION,SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
+from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION, \
+    ARXIV_QUERY_PARAM_DESCRIPTION, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT, \
+    SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT
 from tools.arxiv_tools import search_and_download_papers, get_arxiv_query, execute_search
-from tools.tavily_search_tool import agent_websearch, generate_websearch_query
+from tools.tavily_search_tool import generate_websearch_query, execute_web_search
 from tools.todo_tools import write_todo, read_todo
 from tools.research_tools import get_research_brief,generate_research_brief
 from tools.util_tools import think_tool
@@ -53,9 +55,17 @@ def build_research_coordinator(model):
         name = "Research Coordinator",
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
-        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers,get_research_brief,generate_research_brief,agent_websearch,generate_websearch_query])
+        tool_nodes=[write_todo,read_todo,arxiv_agent,search_and_download_papers,get_research_brief,generate_research_brief])
     return agent
 
+def build_websearch_agent(model):
+    agent = rt.agent_node(
+        name = "Web Search Agent",
+        llm=model,
+        system_message=SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT,
+        tool_nodes=[generate_websearch_query,think_tool,execute_web_search],
+    )
+    return agent
 
 def create_writing_agent(model,summaries):
     agent = rt.agent_node(

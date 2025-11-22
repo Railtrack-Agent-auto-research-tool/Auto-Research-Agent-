@@ -43,7 +43,8 @@ def execute_web_search(query:str):
             "title": result["title"],
             "summary": result["summary"],
         }
-    return
+        test_result.append(entry_dict)
+    return f"These are the initial results: {test_result}"
 
 
 @rt.function_node
