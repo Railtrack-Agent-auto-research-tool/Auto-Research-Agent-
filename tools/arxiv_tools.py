@@ -137,6 +137,7 @@ def download_papers(paper_ids: List[str], directory: str):
     Returns:
         str: A message indicating which papers were downloaded and the target directory.
     """
+    print(f"Downloading papers {paper_ids} to {directory} ")
     return f"Downloaded papers for {paper_ids} in {directory}"
 
 @rt.function_node

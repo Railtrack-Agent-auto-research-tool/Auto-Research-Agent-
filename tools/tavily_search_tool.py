@@ -34,7 +34,7 @@ def extract(urls):
 @rt.function_node
 def download_articles(urls: List[str], directory: str):
     """
-    Downloads articles from the given list of URLs and saves them to the specified directory.
+    Downloads articles from the given list of web search URLs and saves them to the specified directory.
 
     Args:
         urls (List[str]): A list of URLs pointing to the articles to be downloaded.
@@ -43,11 +43,27 @@ def download_articles(urls: List[str], directory: str):
     Returns:
         str: A message indicating which articles are being downloaded and the target directory.
     """
+    print(f"Downloading {urls} to {directory}")
     return f"Downloading articles {urls} in {directory}"
 
 
 @rt.function_node
 def execute_web_search(query:str):
+    """
+    Executes a web search using the Tavily API and returns a summary of results.
+
+    This function initializes a Tavily client with a provided API key, performs a search
+    for the given query, and collects up to 5 results. Each result includes the title,
+    content snippet, and URL. The results are printed to the console and returned as a
+    formatted string.
+
+    Args:
+        query (str): The search query string to be submitted to the Tavily API.
+
+    Returns:
+        str: A formatted string summarizing the search results, including title, content,
+        and URL for each entry.
+    """
     tavily_client = TavilyClient(TAVILY_API_KEY)
     response = tavily_client.search(
         query=query,
@@ -61,7 +77,38 @@ def execute_web_search(query:str):
             "url": result["url"],
         }
         test_result.append(entry_dict)
-        print(result)
+    return f"These are the initial results: {test_result}"
+
+@rt.function_node
+def execute_web_search_main(query:str):
+    """
+    Executes a web search using the Tavily API and returns a summary of results.
+
+    This function initializes a Tavily client with a provided API key, performs a search
+    for the given query, and collects up to 5 results. Each result includes the title,
+    content snippet, and URL. The results are printed to the console and returned as a
+    formatted string.
+
+    Args:
+        query (str): The search query string to be submitted to the Tavily API.
+
+    Returns:
+        str: A formatted string summarizing the search results, including title, content,
+        and URL for each entry.
+    """
+    tavily_client = TavilyClient(TAVILY_API_KEY)
+    response = tavily_client.search(
+        query=query,
+        max_results=5
+    )
+    test_result = []
+    for result in response["results"]:
+        entry_dict = {
+            "title": result["title"],
+            "content": result["content"],
+            "url": result["url"],
+        }
+        test_result.append(entry_dict)
     return f"These are the initial results: {test_result}"
 
 
