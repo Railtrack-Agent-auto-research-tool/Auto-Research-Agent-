@@ -141,7 +141,7 @@ def download_papers(paper_ids: List[str], directory: str):
     return f"Downloaded papers for {paper_ids} in {directory}"
 
 @rt.function_node
-def execute_search_main(query: str) -> List[Dict[str, Any]]:
+def execute_search_main(query: str) -> str:
     """
     Search arXiv for papers matching a query and return a list of metadata dictionaries.
 
@@ -171,7 +171,7 @@ def execute_search_main(query: str) -> List[Dict[str, Any]]:
         entry_dict = {
             "title": result.title,
             "abstract": result.summary,
-            "paper_id": result.entry_id
+            "paper_id": result.get_short_id()
         }
         test_results.append(entry_dict)
     return f"These are the results {test_results}"

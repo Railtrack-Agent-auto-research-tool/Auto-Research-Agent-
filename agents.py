@@ -79,7 +79,7 @@ def build_research_coordinator(model):
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
         tool_nodes=[write_todo, read_todo, arxiv_agent, get_research_brief,
-                    generate_research_brief, websearch_agent,execute_search_main, execute_web_search_main,download_articles])
+                    generate_research_brief, websearch_agent,execute_search_main, execute_web_search_main,download_articles,download_papers])
     return agent
 
 
