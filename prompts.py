@@ -62,9 +62,8 @@ Follow the steps below carefully:
         iv. Use the `search_and_download_papers` tool to download the papers.
 
       - For web resources:
-        i. Generate a web search query using the `generate_websearch_query` tool.
+        i. Generate a web search query using the `Web Search Agent`.
         ii. Present the generated query to the user and ask for confirmation before performing the search.
-        iii. After user confirmation, you may use the `agent_websearch` tool to extract content from the web.
 
    b. Reviewing each paper or resource and highlighting key findings, important points, 
       and anything directly relevant to the user’s research goals.

@@ -72,12 +72,13 @@ def build_websearch_agent(model):
 
 def build_research_coordinator(model):
     arxiv_agent = build_arxiv_agent(model)
+    websearch_agent = build_websearch_agent(model)
     agent = rt.agent_node(
         name="Research Coordinator",
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
         tool_nodes=[write_todo, read_todo, arxiv_agent, search_and_download_papers, get_research_brief,
-                    generate_research_brief])
+                    generate_research_brief, websearch_agent,])
     return agent
 
 
