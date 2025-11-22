@@ -129,7 +129,7 @@ sequenceDiagram
 | Create the research coordinator agent                    | ✅      |
 | Create the Todo tools for the research coordinator agent | ✅      |
 | Create the generate brief tool                           | ✅      |
-|                                                          |        |
+| Create the Websearch Agent                               | ❌      |
 |                                                          |        |
 |                                                          |        |
 |                                                          |        |
