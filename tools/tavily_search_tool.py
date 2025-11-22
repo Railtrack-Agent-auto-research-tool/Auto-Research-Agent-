@@ -1,3 +1,5 @@
+from typing import List
+
 import railtracks as rt
 from tavily import TavilyClient
 import fitz  # PyMuPDF
@@ -29,6 +31,20 @@ def extract(urls):
         print(f"URL: {result['url']}")
         print(f"Raw Content: {result['raw_content']}")
 
+@rt.function_node
+def download_articles(urls: List[str], directory: str):
+    """
+    Downloads articles from the given list of URLs and saves them to the specified directory.
+
+    Args:
+        urls (List[str]): A list of URLs pointing to the articles to be downloaded.
+        directory (str): The directory path where the downloaded articles will be saved.
+
+    Returns:
+        str: A message indicating which articles are being downloaded and the target directory.
+    """
+    return f"Downloading articles {urls} in {directory}"
+
 
 @rt.function_node
 def execute_web_search(query:str):
@@ -41,9 +57,11 @@ def execute_web_search(query:str):
     for result in response["results"]:
         entry_dict = {
             "title": result["title"],
-            "summary": result["summary"],
+            "content": result["content"],
+            "url": result["url"],
         }
         test_result.append(entry_dict)
+        print(result)
     return f"These are the initial results: {test_result}"
 
 

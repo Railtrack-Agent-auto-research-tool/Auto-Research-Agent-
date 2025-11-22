@@ -58,6 +58,9 @@ async def search_and_download_papers(query: str, directory: str) -> str:
         print("Downloading:", paper.title)
         abstract = paper.summary
         titles.append(paper.title + "-" + abstract)
+        print(paper.pdf_url)
+        print(paper.get_short_id())
+        print(paper.entry_id)
 
         # Safe filename
         cleaned_title = (
@@ -109,7 +112,7 @@ def execute_search(query: str) -> List[Dict[str, Any]]:
     """
     results = arxiv.Search(
         query=query,
-        max_results=5,
+        max_results=10,
         sort_by=arxiv.SortCriterion.Relevance
     )
     test_results = []
@@ -117,11 +120,60 @@ def execute_search(query: str) -> List[Dict[str, Any]]:
         entry_dict = {
             "title": result.title,
             "abstract": result.summary,
+            "paper_id": result.entry_id
         }
         test_results.append(entry_dict)
     return test_results
 
+@rt.function_node
+def download_papers(paper_ids: List[str], directory: str):
+    """
+    Downloads papers from arXiv given a list of paper IDs and saves them to the specified directory.
 
+    Args:
+        paper_ids (List[str]): A list of arXiv paper IDs to download (e.g., ["2210.06313v2"]).
+        directory (str): The directory path where the downloaded papers will be saved.
+
+    Returns:
+        str: A message indicating which papers were downloaded and the target directory.
+    """
+    return f"Downloaded papers for {paper_ids} in {directory}"
+
+@rt.function_node
+def execute_search_main(query: str) -> List[Dict[str, Any]]:
+    """
+    Search arXiv for papers matching a query and return a list of metadata dictionaries.
+
+    This function performs an arXiv search using the provided query string and retrieves
+    up to 10 of the most relevant results. For each result, it extracts the title and abstract
+    and returns them as a dictionary.
+
+    Args:
+        query (str): The arXiv search query string (e.g., "transformer models").
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries, each containing:
+            - "title" (str): The paper's title.
+            - "abstract" (str): The paper's abstract.
+
+    Notes:
+        - Results are sorted by arXiv relevance.
+        - Only the first 5 results are returned.
+    """
+    results = arxiv.Search(
+        query=query,
+        max_results=10,
+        sort_by=arxiv.SortCriterion.Relevance
+    )
+    test_results = []
+    for result in results.results():
+        entry_dict = {
+            "title": result.title,
+            "abstract": result.summary,
+            "paper_id": result.entry_id
+        }
+        test_results.append(entry_dict)
+    return f"These are the results {test_results}"
 
 @rt.function_node
 async def get_arxiv_query(query:str):

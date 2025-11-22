@@ -27,6 +27,8 @@ Incorrect example that causes errors:
 ((title:attention OR abstract:attention) AND (cat:cs.CL OR cat:cs.LG OR cat:cs.AI OR cat:stat.ML)) AND submittedDate:[2019-06-09 TO *]
 
 Remember: Only return queries using the `get_arxiv_query` tool. If arXiv is not a reliable source for the topic, explicitly indicate this in your reasoning and suggest alternative research approaches.
+
+For arxiv to be reliable there should be multiple search results. If its not the case let the user know about it.
 """
 
 
@@ -59,11 +61,12 @@ Follow the steps below carefully:
         ii. Before searching, clearly explain the generated arXiv query to the user 
             and ask for confirmation to proceed.
         iii. Only after receiving user approval should you perform the literature search.
-        iv. Use the `search_and_download_papers` tool to download the papers.
+        iv. Use the `execute_search_main` tool to fetch the results and then, by looking at the abstract or summary, select the papers that look promising
 
       - For web resources:
         i. Generate a web search query using the `Web Search Agent`.
         ii. Present the generated query to the user and ask for confirmation before performing the search.
+        iii. Then use the 
 
    b. Reviewing each paper or resource and highlighting key findings, important points, 
       and anything directly relevant to the user’s research goals.
@@ -71,8 +74,6 @@ Follow the steps below carefully:
 Note: Before taking any action or using any tool, record your planned actions as tasks.  
 Use the `write_todo` tool to log tasks and the `read_todo` tool to review your current task list.
 """
-
-
 
 
 ARXIV_AGENT_DESCRIPTION = """
@@ -147,6 +148,7 @@ Your workflow:
    - The best available results have already been provided.
 
 Your goal is to produce focused, accurate, and high-value search queries that closely match the user’s intent, while avoiding unnecessary or unproductive iterations.
+You don't have to return search results.
 """
 
 
@@ -156,11 +158,11 @@ The Web Search Agent is responsible for generating precise, high-quality search 
 It analyzes user intent, formulates effective search queries, and iteratively refines them to ensure the returned results 
 are relevant, accurate, and useful.
 
-Agents should use this agent to generate websearch queries.
+Agents should use this agent to generate websearch queries. This should not be used to fetch results.
 """
 
 WEB_SEARCH_AGENT_QUERY_DESCRIPTION = """
 A natural language instruction describing what information you want to search for on the web. 
-This prompt guides the Web Search Agent in generating an effective Tavily-compatible search query.
+This prompt guides the Web Search Agent in generating an effective Tavily-compatible search query.s
 """
 
