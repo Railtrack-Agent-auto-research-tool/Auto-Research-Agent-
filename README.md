@@ -120,17 +120,17 @@ sequenceDiagram
 
 ```
 ## TODO
-| Task                                                     | Status |
-|----------------------------------------------------------|--------|
-| Create a tool to download papers based on a query        | ✅      |
-| Create a placeholder tool to generate arxiv query        | ✅      |
-| Create the arxiv agent                                   | ✅      |
-| Test the arxiv agent                                     | ✅      |
-| Create the research coordinator agent                    | ✅      |
-| Create the Todo tools for the research coordinator agent | ✅      |
-| Create the generate brief tool                           | ✅      |
-| Create the Websearch Agent                               | ❌      |
-|                                                          |        |
-|                                                          |        |
-|                                                          |        |
-|                                                          |        |
+| Task                                                                               | Status |
+|------------------------------------------------------------------------------------|-------|
+| Create a tool to download papers based on a query                                  | ✅     |
+| Create a placeholder tool to generate arxiv query                                  | ✅     |
+| Create the arxiv agent                                                             | ✅     |
+| Test the arxiv agent                                                               | ✅     |
+| Create the research coordinator agent                                              | ✅     |
+| Create the Todo tools for the research coordinator agent                           | ✅     |
+| Create the generate brief tool                                                     | ✅     |
+| Create the Websearch Agent                                                         | ❌     |
+| Create an an agent that goes through the documents and writes notes and summaries  | ❌     |
+|                                                                                    |       |
+|                                                                                    |       |
+|                                                                                    |       |
