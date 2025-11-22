@@ -81,24 +81,6 @@ def build_research_coordinator(model):
     return agent
 
 
-def build_websearch_agent(model):
-    manifest = rt.ToolManifest(
-        description=WEB_SEARCH_AGENT_DESCRIPTION,
-        parameters=[rt.llm.Parameter(
-            name="prompt",
-            description=WEB_SEARCH_AGENT_QUERY_DESCRIPTION,
-            param_type="string",
-        )]
-    )
-    agent = rt.agent_node(
-        name="Web Search Agent",
-        llm=model,
-        system_message=SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT,
-        tool_nodes=[generate_websearch_query, think_tool, execute_web_search],
-        manifest=manifest
-    )
-    return agent
-
 
 def create_writing_agent(model, summaries):
     agent = rt.agent_node(

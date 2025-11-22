@@ -134,7 +134,7 @@ Your workflow:
 
 2. Use the `generate_websearch_query` tool to produce an initial, Tavily-optimized search query.
 
-3. Use the `execute_web_search` tool to run the generated query and inspect the returned results.
+3. Use the `execute_web_search` tool to run the generated query and inspect the returned results. Additionally, you can use the `think_tool`
 
 4. Evaluate the search results for relevance and usefulness:
    - If the results align with the user’s intent, present them to the user.
