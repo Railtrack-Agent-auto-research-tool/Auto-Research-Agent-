@@ -161,5 +161,7 @@ Agents should use this agent to generate websearch queries.
 """
 
 WEB_SEARCH_AGENT_QUERY_DESCRIPTION = """
-
+A natural language instruction describing what information you want to search for on the web. 
+This prompt guides the Web Search Agent in generating an effective Tavily-compatible search query.
 """
+
