@@ -26,4 +26,13 @@ def get_research_brief() -> str:
     """
     return rt.context.get("research_brief", "No research brief generated.")
 
-# def read_and_write_notes_for_papers() -> str:
+
+@rt.function_node
+def read_write_papers_in_a_directory(directory: str):
+    vfs = rt.context.get("vfs")
+    directories = vfs.get("directories")
+    virtual_directory = directories.get(directory)
+    for file in virtual_directory:
+        print(file)
+    return f"Finished reading all papers in directory {directory}"
+

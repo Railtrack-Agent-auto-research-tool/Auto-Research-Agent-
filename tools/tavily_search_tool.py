@@ -49,7 +49,7 @@ def download_articles(urls: List[str], directory: str):
     directories.setdefault(directory, [])
     virtual_directory = directories.get(directory)
     tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
-    response = tavily_client.extract(urls=urls, include_images=False)
+    response = tavily_client.extract(urls=urls, include_images=False,extract_depth="advanced")
     results = response.get("results", [])
     saved_paths = []
     for idx, item in enumerate(results):
