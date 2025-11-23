@@ -43,7 +43,21 @@ def download_articles(urls: List[str], directory: str):
     Returns:
         str: A message indicating which articles are being downloaded and the target directory.
     """
-    print(f"Downloading {urls} to {directory}")
+    os.makedirs(directory, exist_ok=True)
+    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
+    response = tavily_client.extract(urls=urls, include_images=False)
+    results = response.get("results", [])
+    saved_paths = []
+    for idx, item in enumerate(results):
+        print(item)
+        url = item.get("url", f"unknown_{idx}")
+        content = item.get("raw_content", "")
+        if not content:
+            content = f"(No raw_content extracted from {url})"
+        output_path = os.path.join(directory, f"article_{idx + 1}.pdf")
+        write_text_to_pdf(content, output_path)
+        print(f"✓ Saved PDF: {output_path} (from {url})")
+        saved_paths.append(output_path)
     return f"Downloading articles {urls} in {directory}"
 
 
