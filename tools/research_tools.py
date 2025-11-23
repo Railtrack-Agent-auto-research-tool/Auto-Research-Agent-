@@ -28,11 +28,34 @@ def get_research_brief() -> str:
 
 
 @rt.function_node
-def read_write_papers_in_a_directory(directory: str):
+def read_write_notes_for_papers_in_a_directory(directory: str):
+    """
+    Reads the virtual file system (VFS) and prints the names of all papers
+    stored in the specified directory.
+
+    This function accesses the Railtracks context's virtual file system (`vfs`)
+    to locate a directory of downloaded papers. It iterates through all files
+    in that virtual directory and prints their names. This is typically used
+    as a preliminary step before reading or writing notes associated with
+    each paper.
+
+    Args:
+        directory (str): The name of the directory inside the VFS that contains
+            the papers to be processed.
+
+    Returns:
+        str: A message indicating that all papers in the specified directory
+            have been read.
+
+    Raises:
+        KeyError: If the directory does not exist within the virtual file
+            system structure.
+    """
     vfs = rt.context.get("vfs")
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
     for file in virtual_directory:
         print(file)
     return f"Finished reading all papers in directory {directory}"
+
 
