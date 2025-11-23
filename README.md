@@ -130,7 +130,7 @@ sequenceDiagram
 | Create the Todo tools for the research coordinator agent                           | ✅      |
 | Create the generate brief tool                                                     | ✅      |
 | Create the Websearch Agent                                                         | ✅      |
-| Implement the download code.                                                       | ❌      |
+| Implement the download code.                                                       | ✅      |
 | Create an an agent that goes through the documents and writes notes and summaries  | ❌      |
 | Create an agent that takes these summaries and writes these notes.                 | ❌      |
 | Create an agent that provides feedback on the report and makes appropriate changes | ❌      |

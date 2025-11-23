@@ -44,6 +44,10 @@ def download_articles(urls: List[str], directory: str):
         str: A message indicating which articles are being downloaded and the target directory.
     """
     os.makedirs(directory, exist_ok=True)
+    vfs = rt.context.get("vfs")
+    directories = vfs.get("directories")
+    directories.setdefault(directory, [])
+    virtual_directory = directories.get(directory)
     tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
     response = tavily_client.extract(urls=urls, include_images=False)
     results = response.get("results", [])
@@ -63,10 +67,9 @@ def download_articles(urls: List[str], directory: str):
         )
         output_path = os.path.join(directory, f"{safe_title}.pdf")
         write_text_to_pdf(content, output_path)
-        print(f"✓ Saved PDF: {output_path} (from {url})")
-        saved_paths.append(output_path)
-
-    return f"Downloaded {len(saved_paths)} articles into {directory}"
+        saved_paths.append((safe_title,output_path))
+    virtual_directory.extend(saved_paths)
+    return f"Downloaded {len(saved_paths)} articles into {directory}, this is state of the directory: {virtual_directory} which has the name of the file and its location."
 
 
 @rt.function_node

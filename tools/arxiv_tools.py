@@ -138,6 +138,11 @@ def download_papers(paper_ids: List[str], directory: str):
         str: A message indicating which papers were downloaded and the target directory.
     """
     os.makedirs(directory, exist_ok=True)
+    vfs = rt.context.get("vfs", {})
+    directories = vfs.get("directories")
+    directories.setdefault(directory, [])
+    virtual_directory = directories.get(directory)
+
     downloaded_files = []
     for paper_id in paper_ids:
         # Fetch paper metadata
@@ -145,8 +150,10 @@ def download_papers(paper_ids: List[str], directory: str):
         paper = next(paper)  # Get the first (and only) result
         pdf_filename = f"{paper_id}.pdf"
         out_path = os.path.join(directory, pdf_filename)
+        downloaded_files.append((paper_id,out_path))
         paper.download_pdf(filename=out_path)
-    return f"Downloaded papers for {paper_ids} in {directory}"
+    virtual_directory.extend(downloaded_files)
+    return f"Downloaded papers for {paper_ids} in {directory}, the current directory is state looks as follows {virtual_directory} With their paper id and saved paths."
 
 @rt.function_node
 def execute_search_main(query: str) -> str:
