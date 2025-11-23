@@ -71,10 +71,11 @@ Follow the steps below carefully:
         iv. Then use the `download_articles` tool  to download the articles that are relevant by giving the tools a list of urls.
 
    b. Reviewing each paper or resource and highlighting key findings, important points, 
-      and anything directly relevant to the user’s research goals.
+      and anything directly relevant to the user’s research goals. To do this use the
 
 Note: Before taking any action or using any tool, record your planned actions as tasks.  
 Use the `write_todo` tool to log tasks and the `read_todo` tool to review your current task list.
+Be sure to reflect on this at the end of each task and ensure tasks are completed systematically.
 """
 
 
