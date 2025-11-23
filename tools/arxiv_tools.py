@@ -146,7 +146,6 @@ def download_papers(paper_ids: List[str], directory: str):
         pdf_filename = f"{paper_id}.pdf"
         out_path = os.path.join(directory, pdf_filename)
         paper.download_pdf(filename=out_path)
-        print(f"Downloaded {pdf_filename}")
     return f"Downloaded papers for {paper_ids} in {directory}"
 
 @rt.function_node

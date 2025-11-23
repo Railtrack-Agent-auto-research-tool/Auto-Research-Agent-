@@ -49,16 +49,24 @@ def download_articles(urls: List[str], directory: str):
     results = response.get("results", [])
     saved_paths = []
     for idx, item in enumerate(results):
-        print(item)
         url = item.get("url", f"unknown_{idx}")
+        title = item.get("title")
         content = item.get("raw_content", "")
         if not content:
             content = f"(No raw_content extracted from {url})"
-        output_path = os.path.join(directory, f"article_{idx + 1}.pdf")
+        safe_title = (
+            title.lower()
+            .strip()
+            .replace(" ", "_")
+            .replace("/", "-")
+            .replace("\\", "-")
+        )
+        output_path = os.path.join(directory, f"{safe_title}.pdf")
         write_text_to_pdf(content, output_path)
         print(f"✓ Saved PDF: {output_path} (from {url})")
         saved_paths.append(output_path)
-    return f"Downloading articles {urls} in {directory}"
+
+    return f"Downloaded {len(saved_paths)} articles into {directory}"
 
 
 @rt.function_node
