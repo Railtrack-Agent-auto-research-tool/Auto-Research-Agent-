@@ -132,12 +132,21 @@ def download_papers(paper_ids: List[str], directory: str):
 
     Args:
         paper_ids (List[str]): A list of arXiv paper IDs to download (e.g., ["2210.06313v2"]).
-        directory (str): The directory path where the downloaded papers will be saved.
+        directory (str): The directory path where the downloaded papers will be saved. The directory name should start with ./
 
     Returns:
         str: A message indicating which papers were downloaded and the target directory.
     """
-    print(f"Downloading papers {paper_ids} to {directory} ")
+    os.makedirs(directory, exist_ok=True)
+    downloaded_files = []
+    for paper_id in paper_ids:
+        # Fetch paper metadata
+        paper = arxiv.Search(id_list=[paper_id]).results()
+        paper = next(paper)  # Get the first (and only) result
+        pdf_filename = f"{paper_id}.pdf"
+        out_path = os.path.join(directory, pdf_filename)
+        paper.download_pdf(filename=out_path)
+        print(f"Downloaded {pdf_filename}")
     return f"Downloaded papers for {paper_ids} in {directory}"
 
 @rt.function_node
