@@ -1,5 +1,23 @@
-import railtracks as rt
+import os
+from typing import List
 
+import railtracks as rt
+from pydantic import BaseModel, Field
+
+NOTE_TAKING_SYSTEM_PROMPT = """
+You are a Note-Taking Agent. You are given a paragraph and a user research brief.
+Your task is to extract concise, relevant notes based on the paragraph, focusing
+specifically on information that aligns with the research brief.
+
+Identify key points, insights, or findings that contribute to the user’s research goals.
+Additionally, include any important or high-impact sentences from the paragraph so they
+can be highlighted later.
+"""
+
+
+class NotesSchema(BaseModel):
+    notes: str = Field(description="This field is to store the notes the llm or agent takes")
+    important_sentences: List[str] = Field(description="This field is to store the important sentences the llm or agent takes. This has to store the sentences in the same form as present from the paragraphs supplied")
 
 @rt.function_node
 def generate_research_brief(research_brief: str) -> str:
@@ -28,7 +46,7 @@ def get_research_brief() -> str:
 
 
 @rt.function_node
-def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
+async def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
     """
     Reads a collection of papers stored in a virtual directory and prepares them
     for note-taking and summarization.
@@ -52,12 +70,14 @@ def read_write_notes_for_papers_in_a_directory(directory: str, user_research_bri
     Raises:
         KeyError: If the directory does not exist in the virtual file system.
     """
+    model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
+    note_taking_agent = rt.agent_node(name="note-taking agent",llm=model,system_message=NOTE_TAKING_SYSTEM_PROMPT,output_schema=NotesSchema)
     vfs = rt.context.get("vfs")
     print(user_research_brief)
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
     for file in virtual_directory:
-        print(file)
+
     return f"Finished reading all papers in directory {directory}"
 
 
