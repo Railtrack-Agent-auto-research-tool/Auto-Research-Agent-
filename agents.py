@@ -4,10 +4,13 @@ import os
 import railtracks as rt
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
+from pypdf import PdfReader
 
 from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR, ARXIV_AGENT_DESCRIPTION, \
     ARXIV_QUERY_PARAM_DESCRIPTION, SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT, \
-    SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT, WEB_SEARCH_AGENT_DESCRIPTION, WEB_SEARCH_AGENT_QUERY_DESCRIPTION
+    SYSTEM_PROMPT_FOR_WEB_SEARCH_AGENT, WEB_SEARCH_AGENT_DESCRIPTION, WEB_SEARCH_AGENT_QUERY_DESCRIPTION,\
+    SYSTEM_PROMPT_FOR_READING_AGENT
+from tools.reading_tool import process_pdf_file, process_pdf_folder, extract_paragraphs_from_bytes,get_pdf_bytes_from_vfs,summarize_retrieved_paragraphs,retrieve_relevant_paragraphs
 from tools.arxiv_tools import get_arxiv_query, execute_search, download_papers, execute_search_main
 from tools.research_tools import get_research_brief, generate_research_brief
 from tools.tavily_search_tool import generate_websearch_query, execute_web_search, download_articles, \
@@ -70,26 +73,38 @@ def build_websearch_agent(model):
     )
     return agent
 
-
-def build_research_coordinator(model):
-    arxiv_agent = build_arxiv_agent(model)
-    websearch_agent = build_websearch_agent(model)
-    agent = rt.agent_node(
-        name="Research Coordinator",
-        llm=model,
-        system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
-        tool_nodes=[write_todo, read_todo, arxiv_agent, get_research_brief,
-                    generate_research_brief, websearch_agent,execute_search_main, execute_web_search_main,download_articles,download_papers])
-    return agent
-
-
-
-def create_writing_agent(model, summaries):
+def build_writing_agent(model, summaries):
     agent = rt.agent_node(
         name="writing Agent",
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR_WRITING_AGENT
     )
+
+
+def build_reading_agent(model):
+    agent = rt.agent_node(
+        name="Reading Agent",
+        llm=model,
+        system_message=SYSTEM_PROMPT_FOR_READING_AGENT,
+        tool_nodes=[retrieve_relevant_paragraphs, summarize_retrieved_paragraphs]
+    )
+    return agent
+
+def build_research_coordinator(model):
+    arxiv_agent = build_arxiv_agent(model)
+    websearch_agent = build_websearch_agent(model)
+    reading_agent = build_reading_agent(model)
+    agent = rt.agent_node(
+        name="Research Coordinator",
+        llm=model,
+        system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
+        tool_nodes=[write_todo, read_todo, arxiv_agent, get_research_brief,
+                    generate_research_brief, websearch_agent,execute_search_main, execute_web_search_main,download_articles,
+                    download_papers, reading_agent, process_pdf_folder,process_pdf_file,extract_paragraphs_from_bytes, get_pdf_bytes_from_vfs])
+    return agent
+
+
+
 
 
 async def main():
