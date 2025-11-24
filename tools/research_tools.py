@@ -77,7 +77,7 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
     for file in virtual_directory:
-
+        response = await rt.call(note_taking_agent, "")
     return f"Finished reading all papers in directory {directory}"
 
 
