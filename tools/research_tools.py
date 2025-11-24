@@ -14,7 +14,14 @@ Additionally, include any important or high-impact sentences from the paragraph 
 can be highlighted later.
 """
 
+USER_PROMPT = """
+take notes for the following paragraph given the research brief.
+## paragraph
+{par}
+## Research brief.
+{research_brief}
 
+"""
 class NotesSchema(BaseModel):
     notes: str = Field(description="This field is to store the notes the llm or agent takes")
     important_sentences: List[str] = Field(description="This field is to store the important sentences the llm or agent takes. This has to store the sentences in the same form as present from the paragraphs supplied")
@@ -71,13 +78,17 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
         KeyError: If the directory does not exist in the virtual file system.
     """
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
-    note_taking_agent = rt.agent_node(name="note-taking agent",llm=model,system_message=NOTE_TAKING_SYSTEM_PROMPT,output_schema=NotesSchema)
+    reading_agent = rt.agent_node(name="note-taking agent",llm=model,system_message=NOTE_TAKING_SYSTEM_PROMPT,output_schema=NotesSchema)
+    summarizing_a
     vfs = rt.context.get("vfs")
     print(user_research_brief)
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
     for file in virtual_directory:
-        response = await rt.call(note_taking_agent, "")
+        for paragraph in paragraphs:
+            response = rt.call(reading_agent,USER_PROMPT.format(par=paragraph,user_research_brief=user_research_brief))
+            print(response.structured.notes)
+            print(response.structured.important_sentences)
     return f"Finished reading all papers in directory {directory}"
 
 
