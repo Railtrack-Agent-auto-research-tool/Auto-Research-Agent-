@@ -28,34 +28,37 @@ def get_research_brief() -> str:
 
 
 @rt.function_node
-def read_write_notes_for_papers_in_a_directory(directory: str):
+def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
     """
-    Reads the virtual file system (VFS) and prints the names of all papers
-    stored in the specified directory.
+    Reads a collection of papers stored in a virtual directory and prepares them
+    for note-taking and summarization.
 
-    This function accesses the Railtracks context's virtual file system (`vfs`)
-    to locate a directory of downloaded papers. It iterates through all files
-    in that virtual directory and prints their names. This is typically used
-    as a preliminary step before reading or writing notes associated with
-    each paper.
+    This function accesses the Railtracks context's virtual file system (VFS) to
+    locate a directory containing downloaded research papers. It prints the user's
+    research brief for context, then iterates through all files in the directory,
+    printing each file name. This serves as the entry point for workflows that
+    involve reading papers, generating summaries, and writing structured notes.
 
     Args:
-        directory (str): The name of the directory inside the VFS that contains
-            the papers to be processed.
+        directory (str): The name of the virtual directory containing the papers
+            that will be reviewed.
+        user_research_brief (str): A textual summary of the user's research goals,
+            provided to guide the note-taking and summarization process.
 
     Returns:
-        str: A message indicating that all papers in the specified directory
-            have been read.
+        str: A message confirming that all papers in the specified directory have
+            been processed for reading and note-generation.
 
     Raises:
-        KeyError: If the directory does not exist within the virtual file
-            system structure.
+        KeyError: If the directory does not exist in the virtual file system.
     """
     vfs = rt.context.get("vfs")
+    print(user_research_brief)
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
     for file in virtual_directory:
         print(file)
     return f"Finished reading all papers in directory {directory}"
+
 
 

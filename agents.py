@@ -12,7 +12,7 @@ from prompts import SYSTEM_PROMPT_FOR_ARXIV_AGENT, SYSTEM_PROMPT_FOR_RESEARCH_CO
     SYSTEM_PROMPT_FOR_READING_AGENT
 from tools.reading_tool import process_pdf_file, process_pdf_folder, extract_paragraphs_from_bytes,get_pdf_bytes_from_vfs,summarize_retrieved_paragraphs,retrieve_relevant_paragraphs
 from tools.arxiv_tools import get_arxiv_query, execute_search, download_papers, execute_search_main
-from tools.research_tools import get_research_brief, generate_research_brief
+from tools.research_tools import get_research_brief, generate_research_brief, read_write_notes_for_papers_in_a_directory
 from tools.tavily_search_tool import generate_websearch_query, execute_web_search, download_articles, \
     execute_web_search_main
 from tools.todo_tools import write_todo, read_todo
@@ -81,12 +81,12 @@ def build_writing_agent(model, summaries):
     )
 
 
-def build_reading_agent(model):
+def build_reading_agent(model,paragraph):
     agent = rt.agent_node(
         name="Reading Agent",
         llm=model,
-        system_message=SYSTEM_PROMPT_FOR_READING_AGENT,
-        tool_nodes=[retrieve_relevant_paragraphs, summarize_retrieved_paragraphs]
+        system_message=SYSTEM_PROMPT_FOR_READING_AGENT.format(paragraph=paragraph),
+        #tool_nodes=[retrieve_relevant_paragraphs, summarize_retrieved_paragraphs]
     )
     return agent
 
@@ -99,8 +99,8 @@ def build_research_coordinator(model):
         llm=model,
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
         tool_nodes=[write_todo, read_todo, arxiv_agent, get_research_brief,
-                    generate_research_brief, websearch_agent,execute_search_main, execute_web_search_main,download_articles,
-                    download_papers, reading_agent, process_pdf_folder,process_pdf_file,extract_paragraphs_from_bytes, get_pdf_bytes_from_vfs])
+                    generate_research_brief, websearch_agent,execute_search_main, execute_web_search_main,download_articles,download_papers,
+                    reading_agent, get_pdf_bytes_from_vfs,extract_paragraphs_from_bytes])
     return agent
 
 

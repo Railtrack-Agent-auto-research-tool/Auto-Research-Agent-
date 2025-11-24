@@ -80,15 +80,13 @@ Follow the steps below carefully:
       ii. For each PDF:
          a. Extract text and split it into paragraphs (consider each paragraph as a chunk).
             - Use the tool: extract_paragraphs_from_bytes(pdf_bytes)
-         b. For each paragraph:
-            - Generate an embedding and store it in the vector database (FAISS).
-            - Use the tool: paragraphs_to_embeddings(paragraphs)
-      iii. Use 'Reading Agent' to feed it in the query and retrieve relevant paragraphs, and use it
+      iii. Use 'Reading Agent' to feed it in the paragraphs, and use it
            to summarize those paragraphs and save
 
 
 Note: Before taking any action or using any tool, record your planned actions as tasks.  
 Use the `write_todo` tool to log tasks and the `read_todo` tool to review your current task list.
+Be sure to reflect on this at the end of each task and ensure tasks are completed systematically.
 """
 
 
@@ -185,18 +183,23 @@ This prompt guides the Web Search Agent in generating an effective Tavily-compat
 """
 
 SYSTEM_PROMPT_FOR_READING_AGENT = """
+You are a reading agent and read a paragraph and summarize it.
 
-You are a highly capable Research Assistant that retrieve a vector base based on the query and write summaries for the retrieved paragraphs .
+Summarize the following paragraph in 2-3 sentences (core idea), 
+then write 3-5 bullet-point notes.
 
-1. When given a user query:
-   a. Retrieve the top-k most relevant paragraphs from the vector database using semantic search.
-      - Use the tool: retrieve_relevant_paragraphs(query, top_k)
-   b. Summarize each retrieved paragraph into:
-      - Core Idea (2-3 sentences)
-      - Bullet points (1-2 items) capturing key information
-      - Use the tool: summarize_retrieved_paragraphs(query, model, top_k)
+Paragraph:
+{paragraph}
 
-2. Save structured summaries and store them back in the VFS as text files.
+Format your response as:
 
-Be precise and structured in your outputs. Always indicate paragraph numbers and clearly separate Core Idea from Notes. Follow the tool usage exactly and do not try to do any of these steps manually.
+Core Idea:
+- ...
+
+Notes:
+- ...
+- ...
+- ...
+
+save the structured summaries and store them back in the VFS as text files
 """
