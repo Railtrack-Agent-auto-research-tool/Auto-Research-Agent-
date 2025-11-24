@@ -37,32 +37,32 @@ def extract_paragraphs_from_bytes(pdf_bytes):
     return paragraphs
 
 
-# @rt.function_node
-# def summarize_paragraph(paragraph, model):
-#     prompt = f"""
-# You are an expert note-taker.
+@rt.function_node
+def summarize_paragraph(paragraph, model):
+    prompt = f"""
+You are an expert note-taker.
 
-# Summarize the following paragraph in 2-3 sentences (core idea), 
-# then write 3-5 bullet-point notes.
+Summarize the following paragraph in 2-3 sentences (core idea), 
+then write 3-5 bullet-point notes.
 
-# Paragraph:
-# {paragraph}
+Paragraph:
+{paragraph}
 
-# Format your response as:
+Format your response as:
 
-# Core Idea:
-# - ...
+Core Idea:
+- ...
 
-# Notes:
-# - ...
-# - ...
-# - ...
-# """
-#     response = model.chat.completions.create(
-#         model="gpt-4.1",
-#         messages=[{"role": "user", "content": prompt}]
-#     )
-#     return response.choices[0].message["content"]
+Notes:
+- ...
+- ...
+- ...
+"""
+    response = model.chat.completions.create(
+        model="gpt-4.1",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message["content"]
 
 
 

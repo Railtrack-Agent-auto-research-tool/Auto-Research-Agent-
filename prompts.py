@@ -183,7 +183,7 @@ This prompt guides the Web Search Agent in generating an effective Tavily-compat
 """
 
 SYSTEM_PROMPT_FOR_READING_AGENT = """
-You are a reading agent and read a paragraph and summarize it.
+You are a reading agent and read a paragraph and summarize it using the 'process_pdf_file' function.
 
 Summarize the following paragraph in 2-3 sentences (core idea), 
 then write 3-5 bullet-point notes.

@@ -81,12 +81,12 @@ def build_writing_agent(model, summaries):
     )
 
 
-def build_reading_agent(model,paragraph):
+def build_reading_agent(model):
     agent = rt.agent_node(
         name="Reading Agent",
         llm=model,
-        system_message=SYSTEM_PROMPT_FOR_READING_AGENT.format(paragraph=paragraph),
-        #tool_nodes=[retrieve_relevant_paragraphs, summarize_retrieved_paragraphs]
+        system_message=SYSTEM_PROMPT_FOR_READING_AGENT,
+        tool_nodes=[]
     )
     return agent
 
