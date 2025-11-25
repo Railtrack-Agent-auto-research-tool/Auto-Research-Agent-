@@ -152,7 +152,7 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
                 user_research_brief=user_research_brief
             )
 
-            response = rt.call(
+            response = await rt.call(
                 reading_agent,
                 user_prompt
             )
