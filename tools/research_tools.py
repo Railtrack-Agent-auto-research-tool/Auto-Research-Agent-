@@ -53,7 +53,7 @@ take notes for the following paragraph given the research brief.
 ## paragraph
 {par}
 ## Research brief.
-{research_brief}
+{user_research_brief}
 
 """
 class NotesSchema(BaseModel):
@@ -142,11 +142,11 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
         print(f"\n--- Processing file: {filename} ---")
         file_content = load_pdf_paragraphs(file_path)
         # Split into paragraphs (simple heuristic)
-        paragraphs = [p.strip() for p in file_content.split("\n\n") if p.strip()]
+        #paragraphs = [p.strip() for p in file_content.split("\n\n") if p.strip()]
 
         notes_paragraph = []
         important_sentence = []
-        for paragraph in paragraphs:
+        for paragraph in file_content:
             user_prompt = USER_PROMPT.format(
                 par=paragraph,
                 user_research_brief=user_research_brief
