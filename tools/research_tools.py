@@ -52,8 +52,10 @@ def get_research_brief() -> str:
     return rt.context.get("research_brief", "No research brief generated.")
 
 
+
 @rt.function_node
 async def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
+    notes = "notes"
     """
     Reads a collection of papers stored in a virtual directory and prepares them
     for note-taking and summarization.
@@ -61,8 +63,9 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     This function accesses the Railtracks context's virtual file system (VFS) to
     locate a directory containing downloaded research papers. It prints the user's
     research brief for context, then iterates through all files in the directory,
-    printing each file name. This serves as the entry point for workflows that
-    involve reading papers, generating summaries, and writing structured notes.
+    printing each file name. Each file is assumed to contain text content that can
+    be split into paragraphs. For each paragraph, the note-taking agent generates
+    structured notes and extracts important sentences.
 
     Args:
         directory (str): The name of the virtual directory containing the papers
@@ -77,19 +80,55 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     Raises:
         KeyError: If the directory does not exist in the virtual file system.
     """
+
+    # Load model
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
-    reading_agent = rt.agent_node(name="note-taking agent",llm=model,system_message=NOTE_TAKING_SYSTEM_PROMPT,output_schema=NotesSchema)
-    summarizing_a
+
+    # Create note-taking agent
+    reading_agent = rt.agent_node(
+        name="note-taking agent",
+        llm=model,
+        system_message=NOTE_TAKING_SYSTEM_PROMPT,
+        output_schema=NotesSchema
+    )
+
+    # Get VFS directory
     vfs = rt.context.get("vfs")
-    print(user_research_brief)
     directories = vfs.get("directories")
-    virtual_directory = directories.get(directory)
-    for file in virtual_directory:
+    directories.setdefault(notes, {})   # use dict because you'll store files
+    notes_directory = directories[notes]
+
+    if directory not in directories:
+        raise KeyError(f"Directory '{directory}' does not exist in VFS.")
+
+    virtual_directory = directories[directory]
+
+    # Iterate through files
+    for filename, file_content in virtual_directory:
+        print(f"\n--- Processing file: {filename} ---")
+
+        # Split into paragraphs (simple heuristic)
+        paragraphs = [p.strip() for p in file_content.split("\n\n") if p.strip()]
+
+        notes_paragraph = []
+        important_sentence = []
         for paragraph in paragraphs:
-            response = rt.call(reading_agent,USER_PROMPT.format(par=paragraph,user_research_brief=user_research_brief))
-            print(response.structured.notes)
-            print(response.structured.important_sentences)
-    return f"Finished reading all papers in directory {directory}"
+            user_prompt = USER_PROMPT.format(
+                par=paragraph,
+                user_research_brief=user_research_brief
+            )
 
+            response = rt.call(
+                reading_agent,
+                user_prompt
+            )
 
+            notes_paragraph.append(response.structured.notes)
+            important_sentence.extend(response.structured.important_sentences)
 
+            #notes_filename = f"{filename}_notes.txt"
+            notes_directory[file_content] = (
+                notes_paragraph, important_sentence
+            )
+
+    return f"Finished reading all papers in directory '{directory}'."
