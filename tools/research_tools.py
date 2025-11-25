@@ -140,7 +140,7 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     # Iterate through files
     for filename, file_path in virtual_directory:
         print(f"\n--- Processing file: {filename} ---")
-        file_content = 
+        file_content = load_pdf_paragraphs(file_path)
         # Split into paragraphs (simple heuristic)
         paragraphs = [p.strip() for p in file_content.split("\n\n") if p.strip()]
 
