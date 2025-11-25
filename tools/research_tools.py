@@ -104,9 +104,9 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     virtual_directory = directories[directory]
 
     # Iterate through files
-    for filename, file_content in virtual_directory:
+    for filename, file_path in virtual_directory:
         print(f"\n--- Processing file: {filename} ---")
-
+        file_content = 
         # Split into paragraphs (simple heuristic)
         paragraphs = [p.strip() for p in file_content.split("\n\n") if p.strip()]
 
