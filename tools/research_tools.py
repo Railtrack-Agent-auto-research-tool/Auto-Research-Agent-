@@ -228,5 +228,5 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
         highlight_sentences_in_pdf(file[1], file[0] + ".pdf", sentences_list)
         summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT.format(user_research_brief=user_research_brief,notes=notes_list))
         summary_for_papers.append((file[0], summarising_agent_response.structured.summary))
-    write_report(summary_for_papers,model)
+    # write_report(summary_for_papers,model)
     return f"Finished reading all papers in directory {directory}"
