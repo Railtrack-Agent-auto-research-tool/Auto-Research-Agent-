@@ -182,7 +182,12 @@ sequenceDiagram
 
     WR ->> U: Deliver final report
 ```
+## Set up
 
+```shell
+pip install -r requirements.txt
+python agent.py
+```
 ---
 
 ## TODO
