@@ -4,6 +4,42 @@ from typing import List
 import railtracks as rt
 from pydantic import BaseModel, Field
 
+import fitz  # PyMuPDF
+
+
+def load_pdf_paragraphs(pdf_path: str):
+    """
+    Loads a PDF and extracts text split into paragraphs.
+
+    Args:
+        pdf_path (str): Path to the PDF file.
+
+    Returns:
+        List[str]: A list of paragraphs extracted from the PDF.
+    """
+    doc = fitz.open(pdf_path)
+    full_text = ""
+
+    # Step 1: Extract text from all pages
+    for page in doc:
+        text = page.get_text("text")  # plain text extraction
+        full_text += "\n" + text
+
+    doc.close()
+
+    # Step 2: Normalize whitespace
+    cleaned = full_text.replace("\r", "")
+
+    # Step 3: Split into paragraphs
+    paragraphs = [
+        p.strip()
+        for p in cleaned.split("\n\n")
+        if p.strip()
+    ]
+
+    return paragraphs
+
+
 NOTE_TAKING_SYSTEM_PROMPT = """
 You are a Note-Taking Agent. You are given a paragraph and a user research brief.
 Your task is to extract concise, relevant notes based on the paragraph, focusing
@@ -12,6 +48,13 @@ specifically on information that aligns with the research brief.
 Identify key points, insights, or findings that contribute to the user’s research goals.
 Additionally, include any important or high-impact sentences from the paragraph so they
 can be highlighted later.
+"""
+
+SUMMARIZATION_SYSTEM_PROMPT = """
+You are a summarization agent. You are given a list of notes, excerpts, and partial summaries 
+from a research paper. Your task is to synthesize them into one clear, comprehensive, and 
+coherent consolidated summary. Preserve the key insights, main contributions, and important 
+technical details while removing redundancy and ensuring logical flow.
 """
 
 USER_PROMPT = """
@@ -25,6 +68,9 @@ take notes for the following paragraph given the research brief.
 class NotesSchema(BaseModel):
     notes: str = Field(description="This field is to store the notes the llm or agent takes")
     important_sentences: List[str] = Field(description="This field is to store the important sentences the llm or agent takes. This has to store the sentences in the same form as present from the paragraphs supplied")
+
+class SummarizationSchema(BaseModel):
+    summary: str = Field(description="This field is to store the summaries the llm or agent generates")
 
 @rt.function_node
 def generate_research_brief(research_brief: str) -> str:
@@ -79,16 +125,14 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     """
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
     reading_agent = rt.agent_node(name="note-taking agent",llm=model,system_message=NOTE_TAKING_SYSTEM_PROMPT,output_schema=NotesSchema)
-    summarizing_a
+    summarizing_agent = rt.agent_node(name="summarization-agent",llm=model,system_message=SUMMARIZATION_SYSTEM_PROMPT,output_schema=SummarizationSchema)
     vfs = rt.context.get("vfs")
     print(user_research_brief)
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
     for file in virtual_directory:
-        for paragraph in paragraphs:
-            response = rt.call(reading_agent,USER_PROMPT.format(par=paragraph,user_research_brief=user_research_brief))
-            print(response.structured.notes)
-            print(response.structured.important_sentences)
+        paragraphs = load_pdf_paragraphs(file[1])
+        print(paragraphs)
     return f"Finished reading all papers in directory {directory}"
 
 
