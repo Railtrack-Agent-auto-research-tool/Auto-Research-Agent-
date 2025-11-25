@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 from typing import Any, Dict, List
 
 import arxiv
@@ -110,6 +111,7 @@ def execute_search(query: str) -> List[Dict[str, Any]]:
         - Results are sorted by arXiv relevance.
         - Only the first 5 results are returned.
     """
+    time.sleep(3)
     results = arxiv.Search(
         query=query,
         max_results=10,

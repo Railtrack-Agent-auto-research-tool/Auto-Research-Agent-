@@ -106,7 +106,7 @@ async def main():
 
 
 @rt.session(context={"vfs": {"directories": {
-}}})
+}}},timeout=10000)
 async def main1():
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
     agent = build_research_coordinator(model)

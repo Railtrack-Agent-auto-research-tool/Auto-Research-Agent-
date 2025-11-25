@@ -7,6 +7,28 @@ from pydantic import BaseModel, Field
 import fitz  # PyMuPDF
 
 
+
+def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight):
+    """
+    Highlight a list of sentences in a PDF.
+
+    Args:
+        input_pdf_path (str): Path to the input PDF file.
+        output_pdf_path (str): Path where the highlighted PDF will be saved.
+        sentences_to_highlight (List[str]): List of sentences to highlight.
+    """
+    doc = fitz.open(input_pdf_path)
+
+    for page in doc:
+        for sentence in sentences_to_highlight:
+            # Search for the sentence on the page
+            text_instances = page.search_for(sentence)
+            for inst in text_instances:
+                page.add_highlight_annot(inst)
+
+    doc.save(output_pdf_path)
+    print(f"Saved highlighted PDF as {output_pdf_path}")
+
 def load_pdf_paragraphs(pdf_path: str):
     """
     Loads a PDF and extracts text split into paragraphs.
@@ -47,7 +69,7 @@ specifically on information that aligns with the research brief.
 
 Identify key points, insights, or findings that contribute to the user’s research goals.
 Additionally, include any important or high-impact sentences from the paragraph so they
-can be highlighted later.
+can be highlighted later. Ensure you provide the sentences as it is without any changes.
 """
 
 SUMMARIZATION_SYSTEM_PROMPT = """
@@ -58,11 +80,11 @@ technical details while removing redundancy and ensuring logical flow.
 """
 
 USER_PROMPT = """
-take notes for the following paragraph given the research brief.
-## paragraph
-{par}
+Take notes for the following paragraph making sure its relevant to the research brief.
+## Paragraph
+{paragraph}
 ## Research brief.
-{research_brief}
+{user_research_brief}
 
 """
 class NotesSchema(BaseModel):
@@ -130,9 +152,20 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     print(user_research_brief)
     directories = vfs.get("directories")
     virtual_directory = directories.get(directory)
+    summaries = {
+
+    }
     for file in virtual_directory:
         paragraphs = load_pdf_paragraphs(file[1])
-        print(paragraphs)
+        summaries.setdefault(file[0], [])
+        notes_list =summaries.get(file[0])
+        sentences_list = []
+        for paragraph in paragraphs:
+            reading_agent_response = await rt.call(reading_agent, USER_PROMPT.format(paragraph=paragraph,user_research_brief=user_research_brief) )
+            notes_list.append(reading_agent_response.structured.notes)
+            sentences = reading_agent_response.structured.important_sentences
+            sentences_list.extend(sentences)
+        highlight_sentences_in_pdf(file[1], file[0]+".pdf" ,sentences_list)
     return f"Finished reading all papers in directory {directory}"
 
 
