@@ -4,6 +4,40 @@ from typing import List
 import railtracks as rt
 from pydantic import BaseModel, Field
 
+import fitz  # PyMuPDF
+
+def load_pdf_paragraphs(pdf_path: str):
+    """
+    Loads a PDF and extracts text split into paragraphs.
+
+    Args:
+        pdf_path (str): Path to the PDF file.
+
+    Returns:
+        List[str]: A list of paragraphs extracted from the PDF.
+    """
+    doc = fitz.open(pdf_path)
+    full_text = ""
+
+    # Step 1: Extract text from all pages
+    for page in doc:
+        text = page.get_text("text")  # plain text extraction
+        full_text += "\n" + text
+
+    doc.close()
+
+    # Step 2: Normalize whitespace
+    cleaned = full_text.replace("\r", "")
+    
+    # Step 3: Split into paragraphs
+    paragraphs = [
+        p.strip()
+        for p in cleaned.split("\n\n")
+        if p.strip()
+    ]
+
+    return paragraphs
+
 NOTE_TAKING_SYSTEM_PROMPT = """
 You are a Note-Taking Agent. You are given a paragraph and a user research brief.
 Your task is to extract concise, relevant notes based on the paragraph, focusing
