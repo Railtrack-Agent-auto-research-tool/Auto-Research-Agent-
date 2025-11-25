@@ -8,6 +8,11 @@ import os
 
 TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
 
+import re
+
+def sanitize_filename(name: str) -> str:
+    # Replace illegal Windows characters with an underscore
+    return re.sub(r'[\\/*?:"<>|]', "_", name)
 
 def write_text_to_pdf(text: str, output_path: str):
     pdf = fitz.open()        # new empty PDF
@@ -58,13 +63,7 @@ def download_articles(urls: List[str], directory: str):
         content = item.get("raw_content", "")
         if not content:
             content = f"(No raw_content extracted from {url})"
-        safe_title = (
-            title.lower()
-            .strip()
-            .replace(" ", "_")
-            .replace("/", "-")
-            .replace("\\", "-")
-        )
+        safe_title = sanitize_filename(title.strip().lower())
         output_path = os.path.join(directory, f"{safe_title}.pdf")
         write_text_to_pdf(content, output_path)
         saved_paths.append((safe_title,output_path))
