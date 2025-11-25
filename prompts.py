@@ -71,7 +71,18 @@ Follow the steps below carefully:
         iv. Then use the `download_articles` tool  to download the articles that are relevant by giving the tools a list of urls.
 
    b. Reviewing each paper or resource and highlighting key findings, important points, 
-      and anything directly relevant to the user’s research goals. To do this use the `read_write_notes_for_papers_in_a_directory`.
+      and anything directly relevant to the user’s research goals.
+      Your tasks are:
+
+      i. Access a folder in the virtual file system (VFS) and iterate over all PDF files inside.
+         - Use the tool: get_pdf_bytes_from_vfs(directory, filename) to fetch the PDF bytes.
+
+      ii. For each PDF:
+         a. Extract text and split it into paragraphs (consider each paragraph as a chunk).
+            - Use the tool: extract_paragraphs_from_bytes(pdf_bytes)
+      iii. Use 'Reading Agent' to feed it in the paragraphs, and use it
+           to summarize those paragraphs and save
+
 
 Note: Before taking any action or using any tool, record your planned actions as tasks.  
 Use the `write_todo` tool to log tasks and the `read_todo` tool to review your current task list.
@@ -171,3 +182,24 @@ A natural language instruction describing what information you want to search fo
 This prompt guides the Web Search Agent in generating an effective Tavily-compatible search query.s
 """
 
+SYSTEM_PROMPT_FOR_READING_AGENT = """
+You are a reading agent and read a paragraph and summarize it using the 'process_pdf_file' function.
+
+Summarize the following paragraph in 2-3 sentences (core idea), 
+then write 3-5 bullet-point notes.
+
+Paragraph:
+{paragraph}
+
+Format your response as:
+
+Core Idea:
+- ...
+
+Notes:
+- ...
+- ...
+- ...
+
+save the structured summaries and store them back in the VFS as text files
+"""
