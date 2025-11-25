@@ -21,6 +21,33 @@ The goal of this project is to build a **multi-agent deep research system** capa
 
 Unlike typical research assistants, this system **automates the entire research pipeline**—from query clarification to final report generation—using a coordinated set of specialized agents and tools.
 
+A core principle of this system is **traceability**.  
+Every insight, claim, or conclusion can be traced back to its exact source segment across:
+
+- **Web resources**
+- **PDFs**
+- **Academic papers**
+- **Local documents**
+
+To achieve this, the agents are designed to **highlight important sentences directly inside the source materials**. When an agent identifies a key fact, definition, or citation-worthy statement, it can:
+
+- Automatically locate the sentence in a PDF or extracted text  
+- Apply a highlight annotation  
+- Record the exact location (page number, bounding box, or text index)  
+- Store the highlighted snippet as an evidence pointer for downstream reasoning  
+
+This provides a transparent, audit-ready trail from **final answer → retrieved evidence → source sentence → original document**.
+
+By emphasizing evidence highlighting and traceability, the system enables:
+
+- Higher reliability in generated research outputs  
+- Easier verification of claims  
+- Structured extraction of evidence for reports, summaries, and knowledge graphs  
+- Full reproducibility of the research process
+
+In short, this system is not just an assistant—it is a **traceable, evidence-driven research automation pipeline**, where **important sentences are highlighted directly inside the sources** to ensure accountability and transparency at every step.
+
+
 ---
 
 ## Pipeline
