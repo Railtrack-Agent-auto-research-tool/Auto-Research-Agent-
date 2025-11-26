@@ -76,7 +76,7 @@ In short, this system is not just an assistant—it is a **traceable, evidence-d
 
 ---
 
-# Updated Mermaid Diagrams
+# Mermaid Diagrams
 
 ## **System Architecture Flowchart**
 
