@@ -5,6 +5,8 @@ import fitz  # PyMuPDF
 import railtracks as rt
 from pydantic import BaseModel, Field
 
+from tools.util_tools import think_tool
+
 
 def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight):
     """
@@ -118,6 +120,26 @@ After generating your initial draft of the report:
 Aim for clarity, precision, and readability while producing a comprehensive, accurate, and well-reasoned research report.
 """
 
+WRITING_AGENT_USER_PROMPT = """
+Using the information provided, write a complete research report.
+
+Inputs:
+- **Research Brief:**  
+{user_research_brief}
+
+- **Summaries / Notes:**  
+{summaries}
+
+Instructions:
+- Produce a well-structured report with an Introduction, Body, and Conclusion.
+- Synthesize insights from the summaries while ensuring strict alignment with the research brief.
+- Focus only on information relevant to the brief's objectives and scope.
+- Maintain clarity, coherence, and logical flow throughout.
+
+Write the full research report now.
+"""
+
+
 
 
 USER_PROMPT = """
@@ -137,7 +159,7 @@ This is the user research brief.
 """
 
 CRITIQUE_AGENT_DESCRIPTION = """
-This agent is used to criticise and evaluate a given report. 
+This is the critique agent and is used to criticise and evaluate a given report. 
 """
 
 CRITIQUE_AGENT_SYSTEM_PROMPT = """
@@ -194,7 +216,7 @@ def get_research_brief() -> str:
     """
     return rt.context.get("research_brief", "No research brief generated.")
 
-def write_report(summary_for_papers,model):
+async def write_report(summary_for_papers,model,user_research_brief):
     critique_manifest = rt.ToolManifest(
         description=CRITIQUE_AGENT_DESCRIPTION,
         parameters=[
@@ -210,8 +232,10 @@ def write_report(summary_for_papers,model):
             )
         ]
     )
-    critique_agent = rt.agent_node(name="CRITIQUE AGENT",llm=model,system_message=)
-    write_agent = rt.agent_node(name="Writing Agent ",llm=model,system_message=WRITING_AGENT_SYSTEM_PROMPT,output_schema=ReportSchema)
+    critique_agent = rt.agent_node(name="CRITIQUE AGENT",llm=model,system_message=CRITIQUE_AGENT_DESCRIPTION,manifest=critique_manifest)
+    write_agent = rt.agent_node(name="Writing Agent ",llm=model,system_message=WRITING_AGENT_SYSTEM_PROMPT,output_schema=ReportSchema,tool_nodes=[critique_agent,think_tool])
+    writing_agent_response = await rt.call(write_agent,WRITING_AGENT_USER_PROMPT.format(user_research_brief=user_research_brief,summaries=summary_for_papers))
+    print(writing_agent_response)
 @rt.function_node
 async def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
     """
@@ -266,5 +290,5 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
         summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT.format(user_research_brief=user_research_brief,notes=notes_list))
         summary_for_papers.append((file[0], summarising_agent_response.structured.summary))
     print(summary_for_papers)
-    # write_report(summary_for_papers,model)
+    await write_report(summary_for_papers,model)
     return f"Finished reading all papers in directory {directory}"
