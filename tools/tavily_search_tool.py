@@ -14,20 +14,41 @@ def sanitize_filename(name: str) -> str:
     # Replace illegal Windows characters with an underscore
     return re.sub(r'[\\/*?:"<>|]', "_", name)
 
-def write_text_to_pdf(text: str, output_path: str):
-    pdf = fitz.open()        # new empty PDF
-    page = pdf.new_page()    # create a page
+import fitz
+import textwrap
 
+def write_text_to_pdf(text: str, output_path: str, max_chars_per_line: int = 90):
+    """
+    Writes text into a PDF with automatic line wrapping.
+
+    Parameters:
+        text: The text to write.
+        output_path: Path to save the PDF.
+        max_chars_per_line: Approximate wrap width based on font size and page width.
+    """
+
+    pdf = fitz.open()
+    page = pdf.new_page()
+
+    # vertical cursor position
     y = 50
+
+    # wrap each line individually
     for line in text.split("\n"):
-        page.insert_text((50, y), line, fontsize=12)
-        y += 15
-        if y > 750:
-            page = pdf.new_page()
-            y = 50
+        wrapped_lines = textwrap.wrap(line, width=max_chars_per_line)
+
+        for wrapped_line in wrapped_lines:
+            page.insert_text((50, y), wrapped_line, fontsize=12)
+            y += 15
+
+            # create a new page if we exceed the height
+            if y > 750:
+                page = pdf.new_page()
+                y = 50
 
     pdf.save(output_path)
     pdf.close()
+
 
 def extract(urls):
     tavily_client = TavilyClient(TAVILY_API_KEY)

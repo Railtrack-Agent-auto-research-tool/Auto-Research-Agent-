@@ -94,31 +94,46 @@ Additional instructions:
 """
 WRITING_AGENT_SYSTEM_PROMPT = """
 You are the Writing Agent. You are provided with:
+
 1. A list of summaries or structured notes from research papers or documents.
 2. The user's research brief describing the topic, scope, and specific goals.
 
 Your task is to produce a **well-structured research report** that:
 
-- Follows a clear structure with **Introduction, Body, and Conclusion**.
-- Incorporates and synthesizes the content from all provided summaries.
-- Ensures that the report strictly aligns with the **user's research brief**, focusing only on relevant content.
-- Preserves key insights, technical details, and main contributions from the summaries.
-- Maintains logical flow, clarity, and coherence.
-- Avoids introducing unsupported, speculative, or extraneous information.
+* Follows a clear structure with **Introduction, Body, and Conclusion**.
+* Incorporates and synthesizes the content from all provided summaries.
+* Ensures that the report strictly aligns with the **user's research brief**, focusing only on relevant content.
+* Preserves key insights, technical details, and main contributions from the summaries.
+* Maintains logical flow, clarity, and coherence.
+* Avoids introducing unsupported, speculative, or extraneous information.
 
 Additional structural instructions:
-- The **Introduction** should contextualize the research topic and outline objectives.
-- The **Body** should organize findings logically, grouping related insights and highlighting key results, methods, or themes.
-- The **Conclusion** should summarize the main takeaways and their relevance to the user's research goals.
 
-Quality-improvement requirement:
-After generating your initial draft of the report:
-- **Call the Critique Agent** with both the draft and the research brief.
-- Use the Critique Agent’s feedback to revise, refine, and improve the final report.
-- Ensure the final output fully resolves the critique and aligns tightly with the research brief.
+* The **Introduction** should contextualize the research topic and outline objectives.
+* The **Body** should organize findings logically, grouping related insights and highlighting key results, methods, or themes.
+* The **Conclusion** should summarize the main takeaways and their relevance to the user's research goals.
+
+Critical workflow requirements:
+
+* **Use the Think tool** whenever reasoning, planning, breaking down complex information, or resolving ambiguities is required.
+
+* **Every time you produce a report—whether it is an initial draft, a revised draft, or the final version—you must call the `generate_report` tool**.  
+  This tool must always be used to output any report version.
+
+* **After producing your initial draft (via the `generate_report` tool)**, you must call the **Critique Agent tool**, providing:
+  - the draft report, and
+  - the user’s research brief.
+  The Critique Agent will evaluate clarity, coherence, alignment, completeness, and accuracy.
+
+* **Use the Think tool and Critique Agent feedback** to revise the report.  
+  After each revision, again **use the `generate_report` tool** to output the updated draft.
+
+* **Once all critique points are resolved and the report is polished**, produce the **final report** using the `generate_report` tool.
 
 Aim for clarity, precision, and readability while producing a comprehensive, accurate, and well-reasoned research report.
 """
+
+
 
 WRITING_AGENT_USER_PROMPT = """
 Using the information provided, write a complete research report.
@@ -142,25 +157,16 @@ Write the full research report now.
 
 
 
-USER_PROMPT = """
-Take notes for the following paragraph making sure its relevant to the research brief.
-## Paragraph
-{paragraph}
-## Research brief.
-{user_research_brief}
 
-"""
-SUMMARIZATION_USER_PROMPT = """
-This is the user research brief.
-## Research brief.
-{user_research_brief}
-## Notes
-{notes}
-"""
+
 
 CRITIQUE_AGENT_DESCRIPTION = """
-This is the critique agent and is used to criticise and evaluate a given report. 
+The Critique Agent is responsible for evaluating a drafted research report. 
+It analyzes the report for clarity, coherence, alignment with the user's research brief, 
+accuracy, completeness, logical structure, and adherence to the provided summaries. 
+It provides detailed, actionable feedback that the Writing Agent must use to improve the report.
 """
+
 
 CRITIQUE_AGENT_SYSTEM_PROMPT = """
 You are the Critique Agent. You will be given two inputs:
@@ -216,26 +222,58 @@ def get_research_brief() -> str:
     """
     return rt.context.get("research_brief", "No research brief generated.")
 
+
+
+@rt.function_node
+async def generate_report(report: str, markdown_file: str) -> str:
+    """
+    Writes the research report to a Markdown file, creating the directory if it does not exist,
+    and returns a formatted confirmation message.
+
+    Args:
+        report (str): The research report content generated by the Writing Agent.
+        markdown_file (str): The path to the Markdown file where the report
+            should be written (e.g., 'output/report.md').
+
+    Returns:
+        str: A formatted string indicating that the report has been generated
+             and saved, followed by the full report content.
+    """
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(markdown_file), exist_ok=True)
+
+    # Write the report to the markdown file
+    with open(markdown_file, "w", encoding="utf-8") as f:
+        f.write(report)
+
+    return f"Report saved to {markdown_file}\n\n{report}"
+
+
+def write_markdown(text: str, file_path: str):
+    """
+    Writes a markdown-formatted string to a .md file.
+
+    Args:
+        text (str): The markdown content to write.
+        file_path (str): Path to the markdown file (e.g., 'output.md').
+    """
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(text)
+
 async def write_report(summary_for_papers,model,user_research_brief):
     critique_manifest = rt.ToolManifest(
         description=CRITIQUE_AGENT_DESCRIPTION,
         parameters=[
             rt.llm.Parameter(
-                name="report",
-                description="This parameter contains the report generated by the agent.",
-                param_type="string",
-            ),
-            rt.llm.Parameter(
-                name="user_research_brief",
-                description="This parameter contains the user's research brief.",
+                name="report_and_brief",
+                description="This parameter contains both the research report generated by the agent and the user's research brief, including the topic, scope, and goals that guide the report's content and structure.",
                 param_type="string",
             )
         ]
     )
-    critique_agent = rt.agent_node(name="CRITIQUE AGENT",llm=model,system_message=CRITIQUE_AGENT_DESCRIPTION,manifest=critique_manifest)
-    write_agent = rt.agent_node(name="Writing Agent ",llm=model,system_message=WRITING_AGENT_SYSTEM_PROMPT,output_schema=ReportSchema,tool_nodes=[critique_agent,think_tool])
+    critique_agent = rt.agent_node(name="CRITIQUE AGENT",llm=model,system_message=CRITIQUE_AGENT_SYSTEM_PROMPT,manifest=critique_manifest)
+    write_agent = rt.agent_node(name="Writing Agent ",llm=model,system_message=WRITING_AGENT_SYSTEM_PROMPT,tool_nodes=[generate_report,critique_agent,think_tool])
     writing_agent_response = await rt.call(write_agent,WRITING_AGENT_USER_PROMPT.format(user_research_brief=user_research_brief,summaries=summary_for_papers))
-    print(writing_agent_response)
 @rt.function_node
 async def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
     """
@@ -281,14 +319,27 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
         notes_list = granular_summaries.get(file[0])
         sentences_list = []
         for paragraph in paragraphs:
-            reading_agent_response = await rt.call(reading_agent, USER_PROMPT.format(paragraph=paragraph,
-                                                                                     user_research_brief=user_research_brief))
+            USER_PROMPT = f"""
+            Take notes for the following paragraph making sure its relevant to the research brief.
+            ## Paragraph
+            {paragraph}
+            ## Research brief.
+            {user_research_brief}
+            """
+
+            reading_agent_response = await rt.call(reading_agent, USER_PROMPT)
             notes_list.append(reading_agent_response.structured.notes)
             sentences = reading_agent_response.structured.important_sentences
             sentences_list.extend(sentences)
         highlight_sentences_in_pdf(file[1], file[0] + ".pdf", sentences_list)
-        summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT.format(user_research_brief=user_research_brief,notes=notes_list))
+        SUMMARIZATION_USER_PROMPT = f"""
+        This is the user research brief.
+        ## Research brief.
+        {user_research_brief}
+        ## Notes
+        {notes_list}
+        """
+        summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT)
         summary_for_papers.append((file[0], summarising_agent_response.structured.summary))
-    print(summary_for_papers)
-    await write_report(summary_for_papers,model)
-    return f"Finished reading all papers in directory {directory}"
+    await write_report(summary_for_papers,model,user_research_brief)
+    return f"Finished reading all papers and done writing the report "
