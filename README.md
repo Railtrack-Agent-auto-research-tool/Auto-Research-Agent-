@@ -49,6 +49,9 @@ In short, this system is not just an assistant—it is a **traceable, evidence-d
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/a565d429-38ff-4f1b-8a2f-1c8146ca0259" />
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/822a6b57-838b-4daf-84c8-657c8a9c39f8" />
+
+
 
 ---
 
