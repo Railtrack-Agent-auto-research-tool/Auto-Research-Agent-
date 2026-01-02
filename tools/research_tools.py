@@ -343,3 +343,6 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
         summary_for_papers.append((file[0], summarising_agent_response.structured.summary))
     await write_report(summary_for_papers,model,user_research_brief)
     return f"Finished reading all papers and done writing the report "
+
+def read_papers_and_articles(directory:str, user_research_brief:str):
+
