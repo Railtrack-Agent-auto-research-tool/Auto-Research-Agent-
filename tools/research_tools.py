@@ -345,4 +345,8 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     return f"Finished reading all papers and done writing the report "
 
 def read_papers_and_articles(directory:str, user_research_brief:str):
-
+    model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
+    summarizing_agent = rt.agent_node(name="summarization-agent", llm=model, system_message=SUMMARIZATION_SYSTEM_PROMPT,
+                                      output_schema=SummarizationSchema)
+    vfs = rt.context.get("vfs")
+    directories = vfs.get("directories")
