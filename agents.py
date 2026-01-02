@@ -110,16 +110,8 @@ async def main():
 async def main1():
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
     agent = build_research_coordinator(model)
-    message_history = []
-    while True:
-        user_input = input("Enter a query: ")
-        if user_input.strip() == "quit":
-            break
-        message_history.append(rt.llm.UserMessage(user_input))
-        response = await rt.call(agent, message_history)
-        message_history = response.message_history
-        print("Current Message History: ")
-        print(response.message_history)
+    response = await rt.interactive.local_chat(agent)
+    print(response.content)
 
 
 if __name__ == "__main__":

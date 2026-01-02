@@ -195,28 +195,29 @@ python agent.py
 
 ## TODO
 
-| Task                                                                                                                                  | Status |
-|---------------------------------------------------------------------------------------------------------------------------------------|--------|
-| Create a tool to download papers based on a query                                                                                     | ✅      |
-| Create a placeholder tool to generate arxiv query                                                                                     | ✅      |
-| Create the arxiv agent                                                                                                                | ✅      |
-| Test the arxiv agent                                                                                                                  | ✅      |
-| Create the research coordinator agent                                                                                                 | ✅      |
-| Create the Todo tools for the research coordinator agent                                                                              | ✅      |
-| Create the generate brief tool                                                                                                        | ✅      |
-| Create the Websearch Agent                                                                                                            | ✅      |
-| Implement the download code.                                                                                                          | ✅      |
-| Create an agent that goes through the documents and writes notes                                                                      | ✅      |
-| Create an agent that takes these notes and writes the report                                                                          | ✅      |
-| Create an agent that critiques and improves the report                                                                                | ✅      |
-| Migrate to pdftext to be able to use open source                                                                                      | ❌      |
-| Research on better web search tools                                                                                                   | ❌      |
+| Task                                                                                                                                | Status |
+|-------------------------------------------------------------------------------------------------------------------------------------|--------|
+| Create a tool to download papers based on a query                                                                                   | ✅      |
+| Create a placeholder tool to generate arxiv query                                                                                   | ✅      |
+| Create the arxiv agent                                                                                                              | ✅      |
+| Test the arxiv agent                                                                                                                | ✅      |
+| Create the research coordinator agent                                                                                               | ✅      |
+| Create the Todo tools for the research coordinator agent                                                                            | ✅      |
+| Create the generate brief tool                                                                                                      | ✅      |
+| Create the Websearch Agent                                                                                                          | ✅      |
+| Implement the download code.                                                                                                        | ✅      |
+| Create an agent that goes through the documents and writes notes                                                                    | ✅      |
+| Create an agent that takes these notes and writes the report                                                                        | ✅      |
+| Create an agent that critiques and improves the report                                                                              | ✅      |
+| Migrate to pdftext to be able to use open source                                                                                    | ❌      |
+| Research on better web search tools                                                                                                 | ❌      |
 | Research on better way to retrieve information from documents so that it doesn't start highlighting random crap, maybe test docuglean | ❌      |
-| Add the capability to search Nature papers, IEEE some promising API's are semantic API and CORE API                                   | ❌      |
-| Add Summarization Capability for long conversations                                                                                   | ❌      |
-| Add a section in the report that generates mermaid diagram that shows how each problem in the paper relates to sub problems           | ❌      |
-| Evaluate the highlights the papers performs - come up with strategies that helps do this                                              | ❌      |
-| Decouple Read Notes form write report work on fixing issues                                                                           | ❌      |
+| Add the capability to search Nature papers, IEEE some promising API's are semantic API and CORE API                                 | ❌      |
+| Add Summarization Capability for long conversations                                                                                 | ❌      |
+| Add a section in the report that generates mermaid diagram that shows how each problem in the paper relates to sub problems         | ❌      |
+| Evaluate the highlights the papers performs - come up with strategies that helps do this                                            | ❌      |
+| Decouple Read Notes form write report work on fixing issues                                                                         | ❌      |
+| us                                                                                                                                  |        |
 
 ---
 
