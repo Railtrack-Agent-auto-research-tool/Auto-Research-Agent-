@@ -344,9 +344,45 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     await write_report(summary_for_papers,model,user_research_brief)
     return f"Finished reading all papers and done writing the report "
 
-def read_papers_and_articles(directory:str, user_research_brief:str):
+async def read_papers_and_articles(directory:str, user_research_brief:str):
+    highlighted_papers_dir = "highlighted_papers"
+    os.makedirs(highlighted_papers_dir, exist_ok=True)
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
+    reading_agent = rt.agent_node(name="note-taking agent", llm=model, system_message=NOTE_TAKING_SYSTEM_PROMPT,
+                                  output_schema=NotesSchema)
     summarizing_agent = rt.agent_node(name="summarization-agent", llm=model, system_message=SUMMARIZATION_SYSTEM_PROMPT,
                                       output_schema=SummarizationSchema)
     vfs = rt.context.get("vfs")
-    directories = vfs.get("directories")
+    summary_for_papers = []
+    for entry in vfs:
+        file = entry.get("path")
+        file_name = os.path.basename(file)
+        if file:
+            paragraphs = load_pdf_paragraphs(file)
+            notes_list = []
+            sentences_list = []
+            for paragraph in paragraphs:
+                USER_PROMPT = f"""
+                Take notes for the following paragraph making sure its relevant to the research brief.
+                ## Paragraph
+                {paragraph}
+                ## Research brief.
+                {user_research_brief}
+                """
+                reading_agent_response = await rt.call(reading_agent, USER_PROMPT)
+                notes_list.append(reading_agent_response.structured.notes)
+                sentences = reading_agent_response.structured.important_sentences
+                sentences_list.extend(sentences)
+            output_highlighted_path = os.path.join(highlighted_papers_dir, file_name)
+            highlight_sentences_in_pdf(file,output_highlighted_path,sentences_list)
+            SUMMARIZATION_USER_PROMPT = f"""
+            This is the user research brief.
+            ## Research brief.
+            {user_research_brief}
+            ## Notes
+            {notes_list}
+            """
+            summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT)
+            summary_for_papers.append((file, summarising_agent_response.structured.summary))
+    await write_report(summary_for_papers, model, user_research_brief)
+    return f"Finished reading all papers and done writing the report "

@@ -1,21 +1,22 @@
+import os
 from typing import List
 
 import railtracks as rt
 from tavily import TavilyClient
-import fitz  # PyMuPDF
-import asyncio
-import os
 
 TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
 
 import re
 
+
 def sanitize_filename(name: str) -> str:
     # Replace illegal Windows characters with an underscore
     return re.sub(r'[\\/*?:"<>|]', "_", name)
 
+
 import fitz
 import textwrap
+
 
 def write_text_to_pdf(text: str, output_path: str, max_chars_per_line: int = 90):
     """
@@ -57,8 +58,9 @@ def extract(urls):
         print(f"URL: {result['url']}")
         print(f"Raw Content: {result['raw_content']}")
 
+
 @rt.function_node
-def download_articles(urls: List[str], directory: str):
+def download_articles(urls: List[str], directory):
     """
     Downloads articles from the given list of web search URLs and saves them to the specified directory.
 
@@ -71,29 +73,65 @@ def download_articles(urls: List[str], directory: str):
     """
     os.makedirs(directory, exist_ok=True)
     vfs = rt.context.get("vfs")
-    directories = vfs.get("directories")
-    directories.setdefault(directory, [])
-    virtual_directory = directories.get(directory)
-    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
-    response = tavily_client.extract(urls=urls, include_images=False,extract_depth="advanced")
+    tavily_client = TavilyClient(TAVILY_API_KEY)
+    response = tavily_client.extract(urls, include_images=False, extract_depth="advanced")
     results = response.get("results", [])
-    saved_paths = []
+    initial_length = len(vfs)
     for idx, item in enumerate(results):
         url = item.get("url", f"unknown_{idx}")
-        title = item.get("title")
-        content = item.get("raw_content", "")
+        title = item.get("title", f"unknown_{idx}")
+        content = item.get("raw_content", "No content found ")
         if not content:
-            content = f"(No raw_content extracted from {url})"
-        safe_title = sanitize_filename(title.strip().lower())
-        output_path = os.path.join(directory, f"{safe_title}.pdf")
+            content = "No content found "
+        safe_filename = sanitize_filename(title)
+        output_path = os.path.join(directory, safe_filename + ".pdf")
         write_text_to_pdf(content, output_path)
-        saved_paths.append((safe_title,output_path))
-    virtual_directory.extend(saved_paths)
-    return f"Downloaded {len(saved_paths)} articles into {directory}, this is state of the directory: {virtual_directory} which has the name of the file and its location."
+        vfs_entry = {
+            "url": url,
+            "description": title,
+            "path": output_path,
+        }
+        vfs.append(vfs_entry)
+    return f"Downloaded {len(vfs) - initial_length} articles into {directory}, this is state of the directory: {vfs} which has the name of the file and its location."
+
+
+# @rt.function_node
+# def download_articles(urls: List[str], directory: str):
+#     """
+#     Downloads articles from the given list of web search URLs and saves them to the specified directory.
+#
+#     Args:
+#         urls (List[str]): A list of URLs pointing to the articles to be downloaded.
+#         directory (str): The directory path where the downloaded articles will be saved.
+#
+#     Returns:g
+#         str: A message indicating which articles are being downloaded and the target directory.
+#     """
+#     os.makedirs(directory, exist_ok=True)
+#     vfs = rt.context.get("vfs")
+#     directories = vfs.get("directories")
+#     directories.setdefault(directory, [])
+#     virtual_directory = directories.get(directory)
+#     tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
+#     response = tavily_client.extract(urls=urls, include_images=False,extract_depth="advanced")
+#     results = response.get("results", [])
+#     saved_paths = []
+#     for idx, item in enumerate(results):
+#         url = item.get("url", f"unknown_{idx}")
+#         title = item.get("title")
+#         content = item.get("raw_content", "")
+#         if not content:
+#             content = f"(No raw_content extracted from {url})"
+#         safe_title = sanitize_filename(title.strip().lower())
+#         output_path = os.path.join(directory, f"{safe_title}.pdf")
+#         write_text_to_pdf(content, output_path)
+#         saved_paths.append((safe_title,output_path))
+#     virtual_directory.extend(saved_paths)
+#     return f"Downloaded {len(saved_paths)} articles into {directory}, this is state of the directory: {virtual_directory} which has the name of the file and its location."
 
 
 @rt.function_node
-def execute_web_search(query:str):
+def execute_web_search(query: str):
     """
     Executes a web search using the Tavily API and returns a summary of results.
 
@@ -124,8 +162,9 @@ def execute_web_search(query:str):
         test_result.append(entry_dict)
     return f"These are the initial results: {test_result}"
 
+
 @rt.function_node
-def execute_web_search_main(query:str):
+def execute_web_search_main(query: str):
     """
     Executes a web search using the Tavily API and returns a summary of results.
 
@@ -175,12 +214,6 @@ def download_web_articles(query: str, directory: str) -> str:
     return "Downloaded articles"
 
 
-
-
-
-
-
-
 @rt.function_node
 def generate_websearch_query(query: str) -> str:
     """
@@ -204,6 +237,3 @@ def generate_websearch_query(query: str) -> str:
         'Search Query Generated:' followed by the original query.
     """
     return f"Search Query Generated: {query}"
-
-
-

@@ -80,7 +80,7 @@ def build_research_coordinator(model):
         system_message=SYSTEM_PROMPT_FOR_RESEARCH_COORDINATOR,
         tool_nodes=[write_todo, read_todo, arxiv_agent, get_research_brief,
                     generate_research_brief, websearch_agent, execute_search_main, execute_web_search_main,
-                    download_articles, download_papers, read_write_notes_for_papers_in_a_directory])
+                    download_articles, download_papers,])
     return agent
 
 
@@ -105,8 +105,7 @@ async def main():
         print(response.text)
 
 
-@rt.session(context={"vfs": {"directories": {
-}}},timeout=10000)
+@rt.session(context={"vfs": []},timeout=10000)
 async def main1():
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
     agent = build_research_coordinator(model)
