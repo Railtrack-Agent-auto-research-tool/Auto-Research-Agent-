@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import List
 
@@ -274,8 +275,79 @@ async def write_report(summary_for_papers,model,user_research_brief):
     critique_agent = rt.agent_node(name="CRITIQUE AGENT",llm=model,system_message=CRITIQUE_AGENT_SYSTEM_PROMPT,manifest=critique_manifest)
     write_agent = rt.agent_node(name="Writing Agent ",llm=model,system_message=WRITING_AGENT_SYSTEM_PROMPT,tool_nodes=[generate_report,critique_agent,think_tool])
     writing_agent_response = await rt.call(write_agent,WRITING_AGENT_USER_PROMPT.format(user_research_brief=user_research_brief,summaries=summary_for_papers))
+
+# @rt.function_node
+# async def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
+#     """
+#     Reads a collection of papers stored in a virtual directory and prepares them
+#     for note-taking and summarization.
+#
+#     This function accesses the Railtracks context's virtual file system (VFS) to
+#     locate a directory containing downloaded research papers. It prints the user's
+#     research brief for context, then iterates through all files in the directory,
+#     printing each file name. This serves as the entry point for workflows that
+#     involve reading papers, generating summaries, and writing structured notes.
+#
+#     Args:
+#         directory (str): The name of the virtual directory containing the papers
+#             that will be reviewed.
+#         user_research_brief (str): A textual summary of the user's research goals,
+#             provided to guide the note-taking and summarization process.
+#
+#     Returns:
+#         str: A message confirming that all papers in the specified directory have
+#             been processed for reading and note-generation.
+#
+#     Raises:
+#         KeyError: If the directory does not exist in the virtual file system.
+#     """
+#     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
+#     reading_agent = rt.agent_node(name="note-taking agent", llm=model, system_message=NOTE_TAKING_SYSTEM_PROMPT,
+#                                   output_schema=NotesSchema)
+#     summarizing_agent = rt.agent_node(name="summarization-agent", llm=model, system_message=SUMMARIZATION_SYSTEM_PROMPT,
+#                                       output_schema=SummarizationSchema)
+#     vfs = rt.context.get("vfs")
+#     print(user_research_brief)
+#     directories = vfs.get("directories")
+#     virtual_directory = directories.get(directory)
+#     granular_summaries = {
+#     }
+#     summary_for_papers = []
+#     rt.context.put("granular_summaries", granular_summaries)
+#     rt.context.put("summary_for_papers", summary_for_papers)
+#     for file in virtual_directory:
+#         paragraphs = load_pdf_paragraphs(file[1])
+#         granular_summaries.setdefault(file[0], [])
+#         notes_list = granular_summaries.get(file[0])
+#         sentences_list = []
+#         for paragraph in paragraphs:
+#             USER_PROMPT = f"""
+#             Take notes for the following paragraph making sure its relevant to the research brief.
+#             ## Paragraph
+#             {paragraph}
+#             ## Research brief.
+#             {user_research_brief}
+#             """
+#
+#             reading_agent_response = await rt.call(reading_agent, USER_PROMPT)
+#             notes_list.append(reading_agent_response.structured.notes)
+#             sentences = reading_agent_response.structured.important_sentences
+#             sentences_list.extend(sentences)
+#         highlight_sentences_in_pdf(file[1], file[0] + ".pdf", sentences_list)
+#         SUMMARIZATION_USER_PROMPT = f"""
+#         This is the user research brief.
+#         ## Research brief.
+#         {user_research_brief}
+#         ## Notes
+#         {notes_list}
+#         """
+#         summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT)
+#         summary_for_papers.append((file[0], summarising_agent_response.structured.summary))
+#     await write_report(summary_for_papers,model,user_research_brief)
+#     return f"Finished reading all papers and done writing the report "
+
 @rt.function_node
-async def read_write_notes_for_papers_in_a_directory(directory: str, user_research_brief: str):
+async def read_write_notes_for_papers_in_a_directory(user_research_brief:str):
     """
     Reads a collection of papers stored in a virtual directory and prepares them
     for note-taking and summarization.
@@ -287,8 +359,6 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     involve reading papers, generating summaries, and writing structured notes.
 
     Args:
-        directory (str): The name of the virtual directory containing the papers
-            that will be reviewed.
         user_research_brief (str): A textual summary of the user's research goals,
             provided to guide the note-taking and summarization process.
 
@@ -299,52 +369,6 @@ async def read_write_notes_for_papers_in_a_directory(directory: str, user_resear
     Raises:
         KeyError: If the directory does not exist in the virtual file system.
     """
-    model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
-    reading_agent = rt.agent_node(name="note-taking agent", llm=model, system_message=NOTE_TAKING_SYSTEM_PROMPT,
-                                  output_schema=NotesSchema)
-    summarizing_agent = rt.agent_node(name="summarization-agent", llm=model, system_message=SUMMARIZATION_SYSTEM_PROMPT,
-                                      output_schema=SummarizationSchema)
-    vfs = rt.context.get("vfs")
-    print(user_research_brief)
-    directories = vfs.get("directories")
-    virtual_directory = directories.get(directory)
-    granular_summaries = {
-    }
-    summary_for_papers = []
-    rt.context.put("granular_summaries", granular_summaries)
-    rt.context.put("summary_for_papers", summary_for_papers)
-    for file in virtual_directory:
-        paragraphs = load_pdf_paragraphs(file[1])
-        granular_summaries.setdefault(file[0], [])
-        notes_list = granular_summaries.get(file[0])
-        sentences_list = []
-        for paragraph in paragraphs:
-            USER_PROMPT = f"""
-            Take notes for the following paragraph making sure its relevant to the research brief.
-            ## Paragraph
-            {paragraph}
-            ## Research brief.
-            {user_research_brief}
-            """
-
-            reading_agent_response = await rt.call(reading_agent, USER_PROMPT)
-            notes_list.append(reading_agent_response.structured.notes)
-            sentences = reading_agent_response.structured.important_sentences
-            sentences_list.extend(sentences)
-        highlight_sentences_in_pdf(file[1], file[0] + ".pdf", sentences_list)
-        SUMMARIZATION_USER_PROMPT = f"""
-        This is the user research brief.
-        ## Research brief.
-        {user_research_brief}
-        ## Notes
-        {notes_list}
-        """
-        summarising_agent_response = await rt.call(summarizing_agent, SUMMARIZATION_USER_PROMPT)
-        summary_for_papers.append((file[0], summarising_agent_response.structured.summary))
-    await write_report(summary_for_papers,model,user_research_brief)
-    return f"Finished reading all papers and done writing the report "
-
-async def read_papers_and_articles(directory:str, user_research_brief:str):
     highlighted_papers_dir = "highlighted_papers"
     os.makedirs(highlighted_papers_dir, exist_ok=True)
     model = rt.llm.PortKeyLLM(os.getenv("MODEL", "@openai/gpt-4.1-2025-04-14"))
@@ -362,6 +386,7 @@ async def read_papers_and_articles(directory:str, user_research_brief:str):
             notes_list = []
             sentences_list = []
             for paragraph in paragraphs:
+                await asyncio.sleep(60)
                 USER_PROMPT = f"""
                 Take notes for the following paragraph making sure its relevant to the research brief.
                 ## Paragraph

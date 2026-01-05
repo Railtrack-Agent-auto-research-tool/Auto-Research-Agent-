@@ -60,7 +60,7 @@ def extract(urls):
 
 
 @rt.function_node
-def download_articles(urls: List[str], directory):
+def download_articles(urls: List[str], directory:str):
     """
     Downloads articles from the given list of web search URLs and saves them to the specified directory.
 

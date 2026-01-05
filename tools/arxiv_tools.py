@@ -147,6 +147,7 @@ def download_papers(paper_ids: List[str], directory:str):
         title = paper.title
         pdf_filename = f"{paper_id}.pdf"
         output_path = os.path.join(directory, pdf_filename)
+        paper.download_pdf(filename=output_path)
         vfs_entry = {
             "id": paper_id,
             "description": title,
