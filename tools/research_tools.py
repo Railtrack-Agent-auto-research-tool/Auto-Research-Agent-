@@ -4,10 +4,32 @@ from typing import List
 
 import fitz  # PyMuPDF
 import railtracks as rt
+from docuglean import parse_pdf
 from pydantic import BaseModel, Field
 
 from tools.util_tools import think_tool
 
+
+# def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight):
+#     """
+#     Highlight a list of sentences in a PDF.
+#
+#     Args:
+#         input_pdf_path (str): Path to the input PDF file.
+#         output_pdf_path (str): Path where the highlighted PDF will be saved.
+#         sentences_to_highlight (List[str]): List of sentences to highlight.
+#     """
+#     doc = fitz.open(input_pdf_path)
+#
+#     for page in doc:
+#         for sentence in sentences_to_highlight:
+#             # Search for the sentence on the page
+#             text_instances = page.search_for(sentence)
+#             for inst in text_instances:
+#                 page.add_highlight_annot(inst)
+#
+#     doc.save(output_pdf_path)
+#     print(f"Saved highlighted PDF as {output_pdf_path}")
 
 def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight):
     """
@@ -18,20 +40,43 @@ def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_hig
         output_pdf_path (str): Path where the highlighted PDF will be saved.
         sentences_to_highlight (List[str]): List of sentences to highlight.
     """
-    doc = fitz.open(input_pdf_path)
-
-    for page in doc:
-        for sentence in sentences_to_highlight:
-            # Search for the sentence on the page
-            text_instances = page.search_for(sentence)
-            for inst in text_instances:
-                page.add_highlight_annot(inst)
-
-    doc.save(output_pdf_path)
-    print(f"Saved highlighted PDF as {output_pdf_path}")
 
 
-def load_pdf_paragraphs(pdf_path: str):
+
+# def load_pdf_paragraphs(pdf_path: str):
+#     """
+#     Loads a PDF and extracts text split into paragraphs.
+#
+#     Args:
+#         pdf_path (str): Path to the PDF file.
+#
+#     Returns:
+#         List[str]: A list of paragraphs extracted from the PDF.
+#     """
+#     doc = fitz.open(pdf_path)
+#     full_text = ""
+#
+#     # Step 1: Extract text from all pages
+#     for page in doc:
+#         text = page.get_text("text")  # plain text extraction
+#         full_text += "\n" + text
+#
+#     doc.close()
+#
+#     # Step 2: Normalize whitespace
+#     cleaned = full_text.replace("\r", "")
+#
+#     # Step 3: Split into paragraphs
+#     paragraphs = [
+#         p.strip()
+#         for p in cleaned.split("\n\n")
+#         if p.strip()
+#     ]
+#
+#     return paragraphs
+
+
+async def load_pdf_paragraphs(pdf_path: str):
     """
     Loads a PDF and extracts text split into paragraphs.
 
@@ -41,26 +86,10 @@ def load_pdf_paragraphs(pdf_path: str):
     Returns:
         List[str]: A list of paragraphs extracted from the PDF.
     """
-    doc = fitz.open(pdf_path)
-    full_text = ""
-
-    # Step 1: Extract text from all pages
-    for page in doc:
-        text = page.get_text("text")  # plain text extraction
-        full_text += "\n" + text
-
-    doc.close()
-
-    # Step 2: Normalize whitespace
-    cleaned = full_text.replace("\r", "")
-
-    # Step 3: Split into paragraphs
-    paragraphs = [
-        p.strip()
-        for p in cleaned.split("\n\n")
-        if p.strip()
-    ]
-
+    result = await parse_pdf(
+        "C:\\Users\\dsouz\\Downloads\\A_Novel_Integrated_Approach_for_Stock_Prediction_Based_on_Modal_Decomposition_Technology_and_Machine_Learning.pdf")
+    paragraphs = result["text"].split("\n\n")
+    print(f"Paragraphs extracted from PDF: {len(paragraphs)}")
     return paragraphs
 
 
@@ -382,7 +411,7 @@ async def read_write_notes_for_papers_in_a_directory(user_research_brief:str):
         file = entry.get("path")
         file_name = os.path.basename(file)
         if file:
-            paragraphs = load_pdf_paragraphs(file)
+            paragraphs = await load_pdf_paragraphs(file)
             notes_list = []
             sentences_list = []
             for paragraph in paragraphs:
