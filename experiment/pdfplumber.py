@@ -16,7 +16,12 @@ async def main2():
         ("test","""After the COVID-19 ended, the global economy gradually recovered."""),
         ("","""The stock market plays a great role in the capital market,
 which can promote capital flow, optimize asset allocation,
-and stimulate better and faster economic development""")
+and stimulate better and faster economic development"""),
+        ("bleh","""This study proposes a novel CEEMDAN-LSTM-SALightGBM
+hybrid model based on the CEEMDAN
+algorithm, double-layer LSTM, and simulated annealing
+optimized LightGBM model to improve the fitting ability
+and accuracy of stock price prediction.""")
     ]
     highlighter.highlight("C:\\Users\\dsouz\\Downloads\\A_Novel_Integrated_Approach_for_Stock_Prediction_Based_on_Modal_Decomposition_Technology_and_Machine_Learning.pdf","highlighted.pdf",highlights)
 

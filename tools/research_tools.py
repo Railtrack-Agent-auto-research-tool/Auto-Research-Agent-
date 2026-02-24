@@ -10,6 +10,50 @@ from pydantic import BaseModel, Field
 from tools.util_tools import think_tool
 
 
+def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight,notes):
+    """
+    Highlight a list of sentences in a PDF.
+
+    Args:
+        input_pdf_path (str): Path to the input PDF file.
+        output_pdf_path (str): Path where the highlighted PDF will be saved.
+        sentences_to_highlight (List[str]): List of sentences to highlight.
+    """
+    doc = fitz.open(input_pdf_path)
+
+    notes_iter = iter(notes)
+    for page in doc:
+        for sentence in sentences_to_highlight:
+            # Search for the sentence on the page
+            text_instances = page.search_for(sentence)
+            for inst in text_instances:
+                 page.add_highlight_annot(inst)
+        blocks = page.get_text("blocks")
+        for i,block in enumerate(blocks):
+            x0, y0, x1, y1, text, block_no, block_type = block
+
+            # Only process text blocks
+            if block_type != 0:
+                continue
+
+            paragraph = text.strip()
+            if not paragraph:
+                continue
+
+            # Place sticky note near top-right of paragraph
+            note_position = fitz.Point(x1 + 5, y0)
+            note = next(notes_iter, None)
+            if note:
+                page.add_text_annot(
+                    note_position,
+                    note
+                )
+
+
+
+    doc.save(output_pdf_path)
+    print(f"Saved highlighted PDF as {output_pdf_path}")
+
 # def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight):
 #     """
 #     Highlight a list of sentences in a PDF.
@@ -19,64 +63,10 @@ from tools.util_tools import think_tool
 #         output_pdf_path (str): Path where the highlighted PDF will be saved.
 #         sentences_to_highlight (List[str]): List of sentences to highlight.
 #     """
-#     doc = fitz.open(input_pdf_path)
-#
-#     for page in doc:
-#         for sentence in sentences_to_highlight:
-#             # Search for the sentence on the page
-#             text_instances = page.search_for(sentence)
-#             for inst in text_instances:
-#                 page.add_highlight_annot(inst)
-#
-#     doc.save(output_pdf_path)
-#     print(f"Saved highlighted PDF as {output_pdf_path}")
-
-def highlight_sentences_in_pdf(input_pdf_path, output_pdf_path, sentences_to_highlight):
-    """
-    Highlight a list of sentences in a PDF.
-
-    Args:
-        input_pdf_path (str): Path to the input PDF file.
-        output_pdf_path (str): Path where the highlighted PDF will be saved.
-        sentences_to_highlight (List[str]): List of sentences to highlight.
-    """
 
 
 
-# def load_pdf_paragraphs(pdf_path: str):
-#     """
-#     Loads a PDF and extracts text split into paragraphs.
-#
-#     Args:
-#         pdf_path (str): Path to the PDF file.
-#
-#     Returns:
-#         List[str]: A list of paragraphs extracted from the PDF.
-#     """
-#     doc = fitz.open(pdf_path)
-#     full_text = ""
-#
-#     # Step 1: Extract text from all pages
-#     for page in doc:
-#         text = page.get_text("text")  # plain text extraction
-#         full_text += "\n" + text
-#
-#     doc.close()
-#
-#     # Step 2: Normalize whitespace
-#     cleaned = full_text.replace("\r", "")
-#
-#     # Step 3: Split into paragraphs
-#     paragraphs = [
-#         p.strip()
-#         for p in cleaned.split("\n\n")
-#         if p.strip()
-#     ]
-#
-#     return paragraphs
-
-
-async def load_pdf_paragraphs(pdf_path: str):
+def load_pdf_paragraphs(pdf_path: str):
     """
     Loads a PDF and extracts text split into paragraphs.
 
@@ -86,11 +76,44 @@ async def load_pdf_paragraphs(pdf_path: str):
     Returns:
         List[str]: A list of paragraphs extracted from the PDF.
     """
-    result = await parse_pdf(
-        "C:\\Users\\dsouz\\Downloads\\A_Novel_Integrated_Approach_for_Stock_Prediction_Based_on_Modal_Decomposition_Technology_and_Machine_Learning.pdf")
-    paragraphs = result["text"].split("\n\n")
-    print(f"Paragraphs extracted from PDF: {len(paragraphs)}")
+    doc = fitz.open(pdf_path)
+    full_text = ""
+
+    # Step 1: Extract text from all pages
+    for page in doc:
+        text = page.get_text("text")  # plain text extraction
+        full_text += "\n" + text
+
+    doc.close()
+
+    # Step 2: Normalize whitespace
+    cleaned = full_text.replace("\r", "")
+
+    # Step 3: Split into paragraphs
+    paragraphs = [
+        p.strip()
+        for p in cleaned.split("\n\n")
+        if p.strip()
+    ]
+
     return paragraphs
+
+
+# async def load_pdf_paragraphs(pdf_path: str):
+#     """
+#     Loads a PDF and extracts text split into paragraphs.
+#
+#     Args:
+#         pdf_path (str): Path to the PDF file.
+#
+#     Returns:
+#         List[str]: A list of paragraphs extracted from the PDF.
+#     """
+#     result = await parse_pdf(
+#         "C:\\Users\\dsouz\\Downloads\\A_Novel_Integrated_Approach_for_Stock_Prediction_Based_on_Modal_Decomposition_Technology_and_Machine_Learning.pdf")
+#     paragraphs = result["text"].split("\n\n")
+#     print(f"Paragraphs extracted from PDF: {len(paragraphs)}")
+#     return paragraphs
 
 
 NOTE_TAKING_SYSTEM_PROMPT = """
@@ -411,7 +434,7 @@ async def read_write_notes_for_papers_in_a_directory(user_research_brief:str):
         file = entry.get("path")
         file_name = os.path.basename(file)
         if file:
-            paragraphs = await load_pdf_paragraphs(file)
+            paragraphs = load_pdf_paragraphs(file)
             notes_list = []
             sentences_list = []
             for paragraph in paragraphs:
@@ -428,7 +451,7 @@ async def read_write_notes_for_papers_in_a_directory(user_research_brief:str):
                 sentences = reading_agent_response.structured.important_sentences
                 sentences_list.extend(sentences)
             output_highlighted_path = os.path.join(highlighted_papers_dir, file_name)
-            highlight_sentences_in_pdf(file,output_highlighted_path,sentences_list)
+            highlight_sentences_in_pdf(file,output_highlighted_path,sentences_list,notes_list)
             SUMMARIZATION_USER_PROMPT = f"""
             This is the user research brief.
             ## Research brief.
